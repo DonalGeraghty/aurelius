@@ -1,6 +1,8 @@
 # Aurelius
 
-A small, offline Android home-screen widget that displays a Stoic thought and changes it approximately once per hour.
+Aurelius is a small, offline Android home-screen widget that displays a Stoic thought and changes it approximately once per hour.
+
+The intended distribution method is **Google Play Internal Testing**, with the app kept private and installed only by the selected tester account. Aurelius does not need to be published publicly to Google Play.
 
 ## What it does
 
@@ -18,87 +20,135 @@ The widget asks Android to update it every 3,600,000 ms (one hour) using `AppWid
 
 Android may batch or delay widget updates to protect battery life, so this should be understood as **roughly hourly**, not an exact alarm at `HH:00:00`. Because the displayed quote is calculated from the current local date and hour, a delayed refresh still displays the quote assigned to the current hour.
 
+## Android identity
+
+```text
+Application name: Aurelius
+Application ID:   com.donalgeraghty.stoicwidget
+Minimum SDK:      26 (Android 8.0)
+Target SDK:       37
+Compile SDK:      37
+```
+
+The application ID should be treated as stable once Aurelius is registered/uploaded in Google Play Console.
+
 ## Requirements
 
 - Android Studio compatible with Android Gradle Plugin 9.2
 - JDK 17+
 - Android SDK 37
-- Minimum Android version: Android 8.0 (API 26)
 
-## Open and run
+## GitHub Actions
+
+### Build Android APK
+
+Workflow:
+
+```text
+.github/workflows/build-apk.yml
+```
+
+This runs on pushes and pull requests to `main` and produces a development/debug APK artifact named `Aurelius-debug-apk`.
+
+The debug APK is useful for emulators and unmanaged Android devices. It is **not** the intended installation method for a managed work phone and should not be uploaded to Google Play.
+
+### Build Google Play Internal Test
+
+Workflow:
+
+```text
+.github/workflows/build-play-release.yml
+```
+
+This is a manually triggered workflow that builds a **signed Android App Bundle (`.aab`)** for Google Play Internal Testing.
+
+It asks for:
+
+- `version_code` — positive integer that must increase for each Play upload.
+- `version_name` — user-visible version such as `1.0` or `1.1`.
+
+The resulting artifact is named approximately:
+
+```text
+Aurelius-play-internal-v1.0
+```
+
+and contains:
+
+```text
+app-release.aab
+```
+
+## Google Play setup
+
+Aurelius is designed to stay on the **Internal testing** track. The tester list can contain only the Google account that should be allowed to install the app.
+
+The complete setup guide is here:
+
+**[Google Play Internal Testing guide](docs/GOOGLE_PLAY_INTERNAL_TESTING.md)**
+
+The high-level flow is:
+
+```text
+Create Aurelius in Play Console
+        ↓
+Create private upload keystore
+        ↓
+Store keystore/passwords in GitHub Actions Secrets
+        ↓
+Run "Build Google Play Internal Test"
+        ↓
+Download signed app-release.aab
+        ↓
+Upload to Play Console → Testing → Internal testing
+        ↓
+Add tester Google account
+        ↓
+Open tester opt-in link on phone
+        ↓
+Install Aurelius through Google Play
+```
+
+## Required GitHub Secrets
+
+The Play build requires four repository secrets:
+
+- `AURELIUS_KEYSTORE_BASE64`
+- `AURELIUS_KEYSTORE_PASSWORD`
+- `AURELIUS_KEY_ALIAS`
+- `AURELIUS_KEY_PASSWORD`
+
+The private keystore itself is deliberately not stored in the repository. `.gitignore` excludes common Android keystore files and the temporary Base64 export file.
+
+See the [Google Play Internal Testing guide](docs/GOOGLE_PLAY_INTERNAL_TESTING.md) for the exact `keytool` and Base64 commands.
+
+## Versioning
+
+For the first internal-test build use:
+
+```text
+version_code: 1
+version_name: 1.0
+```
+
+For every later Google Play upload, increase `version_code`:
+
+```text
+1 → 2 → 3 → 4 ...
+```
+
+`version_name` can follow a normal user-facing sequence such as `1.0`, `1.1`, `1.2`, and so on.
+
+## Open locally in Android Studio
 
 1. Clone/download this repository.
 2. Open the project folder in Android Studio.
-3. If Android Studio asks to install SDK 37 or compatible Gradle tooling, allow it.
-4. Run the `app` configuration on your Android phone or emulator.
+3. Allow Android Studio to install SDK 37 or compatible Gradle tooling if requested.
+4. Run the `app` configuration on an emulator or permitted Android device.
 5. Long-press an empty area of the home screen.
-6. Choose **Widgets** → **Aurelius** and drag it onto the home screen.
+6. Choose **Widgets → Aurelius** and drag it onto the home screen.
 
-## GitHub Actions builds
-
-### Debug APK
-
-`.github/workflows/build-apk.yml` builds a debug APK on pushes and pull requests to `main`. The resulting `app-debug.apk` is uploaded as the `Aurelius-debug-apk` workflow artifact.
-
-### Galaxy Store beta bundle
-
-`.github/workflows/build-galaxy-beta.yml` manually builds an **unsigned Android App Bundle (`.aab`)** for a new Galaxy Store app. For a new AAB-based Galaxy Store app, Samsung Seller Portal can manage the app signing key.
-
-1. Open **Actions → Build Galaxy Store Beta**.
-2. Choose **Run workflow**.
-3. For the first upload use version code `1` and version name `1.0`.
-4. Download the `Aurelius-galaxy-beta-1.0` artifact.
-5. Extract `app-release.aab`.
-6. In Samsung Seller Portal choose **Add New App → Android** and upload the AAB in the Binary section.
-7. Use the Galaxy Store signing-key option for the new AAB app.
-8. Complete the required App Information fields and then choose **Add Beta Test → Closed Beta Test**.
-9. Add your own Samsung account as the tester and submit the beta.
-10. Open the beta participation URL on your Samsung phone while signed into that Samsung account.
-
-For subsequent Samsung uploads, increase the Android version code (`2`, `3`, `4`, ...).
-
-### Google Play release bundle
-
-`.github/workflows/build-play-release.yml` manually builds a **signed Android App Bundle (`.aab`)** suitable for uploading to Google Play.
-
-The signing key is deliberately **not stored in this repository**. Create an upload keystore once and keep a secure backup of it.
-
-Example:
-
-```bash
-keytool -genkeypair \
-  -v \
-  -keystore aurelius-upload.jks \
-  -alias aurelius \
-  -keyalg RSA \
-  -keysize 2048 \
-  -validity 10000
-```
-
-Convert the keystore to a single-line Base64 string:
-
-```bash
-base64 -w 0 aurelius-upload.jks > aurelius-upload.base64.txt
-```
-
-In GitHub, open **Settings → Secrets and variables → Actions** and create these repository secrets:
-
-- `AURELIUS_KEYSTORE_BASE64` — contents of `aurelius-upload.base64.txt`
-- `AURELIUS_KEYSTORE_PASSWORD` — password used for the keystore
-- `AURELIUS_KEY_ALIAS` — for the example above: `aurelius`
-- `AURELIUS_KEY_PASSWORD` — password for the key alias
-
-Keep `aurelius-upload.jks` and its passwords somewhere safe outside GitHub. Losing the upload key can complicate future app releases.
-
-Once the secrets are configured:
-
-1. Open **Actions → Build Play Release**.
-2. Choose **Run workflow**.
-3. Enter a `version_code` and `version_name`.
-4. For the first release use version code `1` and version name `1.0`.
-5. Every later Play upload must use a larger version code (`2`, `3`, `4`, ...).
-6. Download the `Aurelius-play-release-v...` artifact.
-7. Upload `app-release.aab` to Google Play Console.
+Android Studio/ADB installation is a development option only. A managed device may prevent developer-installed apps; Google Play Internal Testing is the intended route for the managed phone.
 
 ## Project layout
 
@@ -115,6 +165,19 @@ app/src/main/
     ├── values/
     └── xml/stoic_widget_info.xml
 ```
+
+## Privacy
+
+Aurelius is intentionally self-contained:
+
+- no network permission
+- no account/login
+- no backend
+- no advertising
+- no analytics
+- no remote quote service
+
+Quotes are bundled in the app, so the widget continues to work offline.
 
 ## Possible next features
 
