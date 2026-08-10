@@ -40,6 +40,23 @@ Android may batch or delay widget updates to protect battery life, so this shoul
 
 `.github/workflows/build-apk.yml` builds a debug APK on pushes and pull requests to `main`. The resulting `app-debug.apk` is uploaded as the `Aurelius-debug-apk` workflow artifact.
 
+### Galaxy Store beta bundle
+
+`.github/workflows/build-galaxy-beta.yml` manually builds an **unsigned Android App Bundle (`.aab`)** for a new Galaxy Store app. For a new AAB-based Galaxy Store app, Samsung Seller Portal can manage the app signing key.
+
+1. Open **Actions → Build Galaxy Store Beta**.
+2. Choose **Run workflow**.
+3. For the first upload use version code `1` and version name `1.0`.
+4. Download the `Aurelius-galaxy-beta-1.0` artifact.
+5. Extract `app-release.aab`.
+6. In Samsung Seller Portal choose **Add New App → Android** and upload the AAB in the Binary section.
+7. Use the Galaxy Store signing-key option for the new AAB app.
+8. Complete the required App Information fields and then choose **Add Beta Test → Closed Beta Test**.
+9. Add your own Samsung account as the tester and submit the beta.
+10. Open the beta participation URL on your Samsung phone while signed into that Samsung account.
+
+For subsequent Samsung uploads, increase the Android version code (`2`, `3`, `4`, ...).
+
 ### Google Play release bundle
 
 `.github/workflows/build-play-release.yml` manually builds a **signed Android App Bundle (`.aab`)** suitable for uploading to Google Play.
