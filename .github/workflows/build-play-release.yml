@@ -1,10 +1,10 @@
-name: Build Play Release
+name: Build Google Play Internal Test
 
 on:
   workflow_dispatch:
     inputs:
       version_code:
-        description: Google Play version code (must increase each release)
+        description: Android version code (must increase for each Play upload)
         required: true
         default: '1'
       version_name:
@@ -16,8 +16,8 @@ permissions:
   contents: read
 
 jobs:
-  release:
-    name: Build signed release AAB
+  build:
+    name: Build signed internal-test AAB
     runs-on: ubuntu-latest
 
     steps:
@@ -35,6 +35,15 @@ jobs:
         with:
           gradle-version: '9.4.1'
           cache-provider: basic
+
+      - name: Validate version inputs
+        env:
+          VERSION_CODE: ${{ inputs.version_code }}
+        run: |
+          case "$VERSION_CODE" in
+            ''|*[!0-9]*) echo "version_code must be a positive integer"; exit 1 ;;
+          esac
+          test "$VERSION_CODE" -gt 0 || { echo "version_code must be greater than zero"; exit 1; }
 
       - name: Validate signing secrets
         env:
@@ -54,7 +63,7 @@ jobs:
         run: |
           printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/aurelius-upload.jks"
 
-      - name: Build signed release bundle
+      - name: Build signed Android App Bundle
         env:
           AURELIUS_KEYSTORE_PATH: ${{ runner.temp }}/aurelius-upload.jks
           AURELIUS_KEYSTORE_PASSWORD: ${{ secrets.AURELIUS_KEYSTORE_PASSWORD }}
@@ -64,10 +73,10 @@ jobs:
           AURELIUS_VERSION_NAME: ${{ inputs.version_name }}
         run: gradle :app:bundleRelease --stacktrace
 
-      - name: Upload Play bundle
+      - name: Upload Google Play internal-test bundle
         uses: actions/upload-artifact@v4
         with:
-          name: Aurelius-play-release-v${{ inputs.version_name }}
+          name: Aurelius-play-internal-v${{ inputs.version_name }}
           path: app/build/outputs/bundle/release/app-release.aab
           if-no-files-found: error
           retention-days: 30
