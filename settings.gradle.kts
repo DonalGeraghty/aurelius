@@ -14,5 +14,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "StoicWidget"
+rootProject.name = "Aurelius"
 include(":app")
