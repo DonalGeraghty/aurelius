@@ -1,4 +1,4 @@
-# StoicWidget
+# Aurelius
 
 A small, offline Android home-screen widget that displays a Stoic thought and changes it approximately once per hour.
 
@@ -32,7 +32,56 @@ Android may batch or delay widget updates to protect battery life, so this shoul
 3. If Android Studio asks to install SDK 37 or compatible Gradle tooling, allow it.
 4. Run the `app` configuration on your Android phone or emulator.
 5. Long-press an empty area of the home screen.
-6. Choose **Widgets** → **StoicWidget** and drag it onto the home screen.
+6. Choose **Widgets** → **Aurelius** and drag it onto the home screen.
+
+## GitHub Actions builds
+
+### Debug APK
+
+`.github/workflows/build-apk.yml` builds a debug APK on pushes and pull requests to `main`. The resulting `app-debug.apk` is uploaded as the `Aurelius-debug-apk` workflow artifact.
+
+### Google Play release bundle
+
+`.github/workflows/build-play-release.yml` manually builds a **signed Android App Bundle (`.aab`)** suitable for uploading to Google Play.
+
+The signing key is deliberately **not stored in this repository**. Create an upload keystore once and keep a secure backup of it.
+
+Example:
+
+```bash
+keytool -genkeypair \
+  -v \
+  -keystore aurelius-upload.jks \
+  -alias aurelius \
+  -keyalg RSA \
+  -keysize 2048 \
+  -validity 10000
+```
+
+Convert the keystore to a single-line Base64 string:
+
+```bash
+base64 -w 0 aurelius-upload.jks > aurelius-upload.base64.txt
+```
+
+In GitHub, open **Settings → Secrets and variables → Actions** and create these repository secrets:
+
+- `AURELIUS_KEYSTORE_BASE64` — contents of `aurelius-upload.base64.txt`
+- `AURELIUS_KEYSTORE_PASSWORD` — password used for the keystore
+- `AURELIUS_KEY_ALIAS` — for the example above: `aurelius`
+- `AURELIUS_KEY_PASSWORD` — password for the key alias
+
+Keep `aurelius-upload.jks` and its passwords somewhere safe outside GitHub. Losing the upload key can complicate future app releases.
+
+Once the secrets are configured:
+
+1. Open **Actions → Build Play Release**.
+2. Choose **Run workflow**.
+3. Enter a `version_code` and `version_name`.
+4. For the first release use version code `1` and version name `1.0`.
+5. Every later Play upload must use a larger version code (`2`, `3`, `4`, ...).
+6. Download the `Aurelius-play-release-v...` artifact.
+7. Upload `app-release.aab` to Google Play Console.
 
 ## Project layout
 
