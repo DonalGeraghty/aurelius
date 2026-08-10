@@ -8,6 +8,11 @@ val releaseKeyAlias = System.getenv("AURELIUS_KEY_ALIAS")
 val releaseKeyPassword = System.getenv("AURELIUS_KEY_PASSWORD")
 val releaseVersionCode = System.getenv("AURELIUS_VERSION_CODE")?.toIntOrNull() ?: 1
 val releaseVersionName = System.getenv("AURELIUS_VERSION_NAME") ?: "1.0"
+val hasReleaseSigning =
+    releaseKeystorePath != null &&
+        releaseKeystorePassword != null &&
+        releaseKeyAlias != null &&
+        releaseKeyPassword != null
 
 android {
     namespace = "com.donalgeraghty.stoicwidget"
@@ -22,14 +27,9 @@ android {
     }
 
     signingConfigs {
-        create("release") {
-            if (
-                releaseKeystorePath != null &&
-                releaseKeystorePassword != null &&
-                releaseKeyAlias != null &&
-                releaseKeyPassword != null
-            ) {
-                storeFile = file(releaseKeystorePath)
+        if (hasReleaseSigning) {
+            create("release") {
+                storeFile = file(releaseKeystorePath!!)
                 storePassword = releaseKeystorePassword
                 keyAlias = releaseKeyAlias
                 keyPassword = releaseKeyPassword
@@ -40,7 +40,9 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = false
-            signingConfig = signingConfigs.getByName("release")
+            if (hasReleaseSigning) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
     }
 
