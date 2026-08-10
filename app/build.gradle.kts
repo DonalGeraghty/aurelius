@@ -6,6 +6,8 @@ val releaseKeystorePath = System.getenv("AURELIUS_KEYSTORE_PATH")
 val releaseKeystorePassword = System.getenv("AURELIUS_KEYSTORE_PASSWORD")
 val releaseKeyAlias = System.getenv("AURELIUS_KEY_ALIAS")
 val releaseKeyPassword = System.getenv("AURELIUS_KEY_PASSWORD")
+val releaseVersionCode = System.getenv("AURELIUS_VERSION_CODE")?.toIntOrNull() ?: 1
+val releaseVersionName = System.getenv("AURELIUS_VERSION_NAME") ?: "1.0"
 
 android {
     namespace = "com.donalgeraghty.stoicwidget"
@@ -15,8 +17,8 @@ android {
         applicationId = "com.donalgeraghty.stoicwidget"
         minSdk = 26
         targetSdk = 37
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = releaseVersionCode
+        versionName = releaseVersionName
     }
 
     signingConfigs {
