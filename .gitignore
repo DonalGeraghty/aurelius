@@ -4,7 +4,12 @@
 /.idea/
 .DS_Store
 /build/
-/captures/
+captures/
 .externalNativeBuild/
 .cxx/
 app/build/
+
+# Android signing material - never commit private keys or exported secrets
+*.jks
+*.keystore
+*base64.txt
