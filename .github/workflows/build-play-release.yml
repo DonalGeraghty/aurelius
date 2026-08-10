@@ -2,6 +2,15 @@ name: Build Play Release
 
 on:
   workflow_dispatch:
+    inputs:
+      version_code:
+        description: Google Play version code (must increase each release)
+        required: true
+        default: '1'
+      version_name:
+        description: User-visible version name
+        required: true
+        default: '1.0'
 
 permissions:
   contents: read
@@ -51,12 +60,14 @@ jobs:
           AURELIUS_KEYSTORE_PASSWORD: ${{ secrets.AURELIUS_KEYSTORE_PASSWORD }}
           AURELIUS_KEY_ALIAS: ${{ secrets.AURELIUS_KEY_ALIAS }}
           AURELIUS_KEY_PASSWORD: ${{ secrets.AURELIUS_KEY_PASSWORD }}
+          AURELIUS_VERSION_CODE: ${{ inputs.version_code }}
+          AURELIUS_VERSION_NAME: ${{ inputs.version_name }}
         run: gradle :app:bundleRelease --stacktrace
 
       - name: Upload Play bundle
         uses: actions/upload-artifact@v4
         with:
-          name: Aurelius-play-release
+          name: Aurelius-play-release-v${{ inputs.version_name }}
           path: app/build/outputs/bundle/release/app-release.aab
           if-no-files-found: error
           retention-days: 30
