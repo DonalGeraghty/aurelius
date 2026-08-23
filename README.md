@@ -11,16 +11,21 @@ This README is also intended to act as a **study guide and deployment record** f
 - Native Android app written in Kotlin.
 - Home-screen widget with quote + attribution.
 - 72 bundled Stoic quotations/adaptations.
-- Deterministic quote for each clock-hour: multiple refreshes in the same hour show the same quote.
+- Pseudo-random quote on each widget update or manual refresh.
+- Resizable from a compact approximately 2×2 layout, with 4×2 as the preferred initial size on Android 12 and newer.
+- Responsive compact, standard, and large typography as the widget is resized.
+- System, dark, light, and Android 12+ wallpaper-derived color themes.
+- Solid or transparent background, three font sizes, and optional attribution.
 - No internet permission, API, account, ads, analytics, server, or database.
 - Tapping the widget opens the small companion app.
+- Tapping the displayed quote or attribution immediately chooses another pseudo-random quote.
 - Companion app previews the current quote and lets you manually refresh installed widgets.
 
 ## Scheduling behaviour
 
 The widget asks Android to update it every 3,600,000 ms (one hour) using `AppWidgetProviderInfo.updatePeriodMillis`.
 
-Android may batch or delay widget updates to protect battery life, so this should be understood as **roughly hourly**, not an exact alarm at `HH:00:00`. Because the displayed quote is calculated from the current local date and hour, a delayed refresh still displays the quote assigned to the current hour.
+Android may batch or delay widget updates to protect battery life, so this should be understood as **roughly hourly**, not an exact alarm at `HH:00:00`. Each update selects a bundled quote using `Math.random()`; a manual refresh also selects a new pseudo-random quote.
 
 ## Android identity
 
@@ -382,7 +387,7 @@ After Aurelius is installed:
 3. find **Aurelius**
 4. drag the widget onto the home screen
 
-The widget should display the quote assigned to the current hour.
+The widget should display a pseudo-random quote and can be resized using the launcher's widget resize handles.
 
 ---
 
@@ -491,8 +496,6 @@ Quotes are bundled in the app, so the widget continues to work offline.
 
 - Quote frequency setting (hourly / 3-hourly / daily).
 - Filter by philosopher.
-- Light / dark / transparent widget styles.
-- Font-size and widget-density controls.
 - Favourite quotes.
 - Tap action to advance manually.
 - Share quote.

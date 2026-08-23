@@ -1,8 +1,5 @@
 package com.donalgeraghty.stoicwidget
 
-import java.time.LocalDateTime
-import java.time.ZoneId
-
 object QuoteRepository {
     // Concise adaptations of ideas from classical Stoic texts. Keeping these
     // local makes the widget fast, private, offline, and free of API costs.
@@ -81,17 +78,9 @@ object QuoteRepository {
         Quote("Control the response, not the weather.", "Stoic principle — adapted")
     )
 
-    fun quoteForCurrentHour(zoneId: ZoneId = ZoneId.systemDefault()): Quote {
-        val now = LocalDateTime.now(zoneId)
-        // Same quote throughout a clock-hour, deterministic across widget refreshes.
-        val hourKey = now.toLocalDate().toEpochDay() * 24L + now.hour
-        val index = Math.floorMod(hourKey, quotes.size.toLong()).toInt()
+    fun randomQuote(): Quote {
+        val index = Math.floor(Math.random() * quotes.size).toInt()
         return quotes[index]
-    }
-
-    fun nextQuote(current: Quote): Quote {
-        val currentIndex = quotes.indexOf(current).takeIf { it >= 0 } ?: 0
-        return quotes[(currentIndex + 1) % quotes.size]
     }
 
     fun size(): Int = quotes.size

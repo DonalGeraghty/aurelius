@@ -9,4 +9,20 @@
     <string name="widget_refreshed">Widget refreshed</string>
     <string name="quote_count">%1$d offline quotes included</string>
     <string name="add_widget_help">To add it: long-press an empty area of your Android home screen → Widgets → StoicWidget → drag the widget onto your home screen.</string>
+    <string name="appearance_heading">Widget appearance</string>
+    <string name="theme_label">Color theme</string>
+    <string name="font_size_label">Font size</string>
+    <string name="transparent_background">Transparent background</string>
+    <string name="show_attribution">Show attribution</string>
+    <string-array name="widget_theme_options">
+        <item>Follow system</item>
+        <item>Dark</item>
+        <item>Light</item>
+        <item>Wallpaper colors</item>
+    </string-array>
+    <string-array name="widget_font_size_options">
+        <item>Small</item>
+        <item>Medium</item>
+        <item>Large</item>
+    </string-array>
 </resources>
