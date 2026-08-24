@@ -299,14 +299,14 @@ class MainActivity : Activity() {
     }
 
     private fun refreshContent() {
-        StoicWidgetProvider.updateAllWidgets(this, selectNewQuote = true)
+        StoicWidgetProvider.updateAllWidgets(this, selectNewContent = true)
         previewContent = WidgetContentSelector.random(this)
         renderPreview()
     }
 
     private fun appearanceChanged() {
         if (!settingUpControls) {
-            StoicWidgetProvider.updateAllWidgets(this, selectNewQuote = false)
+            StoicWidgetProvider.updateAllWidgets(this, selectNewContent = false)
             renderPreview()
         }
     }

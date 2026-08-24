@@ -79,12 +79,12 @@ class StoicWidgetProvider : AppWidgetProvider() {
 
         fun updateAllWidgets(
             context: Context,
-            selectNewQuote: Boolean = true,
+            selectNewContent: Boolean = true,
         ) {
             val manager = AppWidgetManager.getInstance(context)
             val component = ComponentName(context, StoicWidgetProvider::class.java)
             manager.getAppWidgetIds(component).forEach { id ->
-                updateWidget(context, manager, id, selectNewQuote)
+                updateWidget(context, manager, id, selectNewContent)
             }
         }
 

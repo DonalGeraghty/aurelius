@@ -6,6 +6,6 @@ enum class ContentMode {
 
     companion object {
         fun fromStoredValue(value: String?): ContentMode =
-            entries.firstOrNull { it.name == value } ?: STOIC
+            values().firstOrNull { it.name == value } ?: STOIC
     }
 }

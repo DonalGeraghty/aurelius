@@ -30,7 +30,7 @@ This README is also intended to act as a **study guide and deployment record** f
 
 **My messages** selects from messages created in the companion app. Messages can be added, edited, and deleted, are limited to 500 characters, and stay on the device in versioned `SharedPreferences` storage. The mode cannot be enabled until at least one message exists. Deleting the final message automatically returns Aurelius to Stoic mode so the widget is never left blank.
 
-The selected mode applies to all installed Aurelius widgets. Switching modes or changing the personal-message collection refreshes the widgets immediately. Uninstalling Aurelius or clearing its app data removes the personal messages.
+The selected mode applies to all installed Aurelius widgets. Switching modes or changing the personal-message collection refreshes the widgets immediately. Personal messages are excluded from Android backup; uninstalling Aurelius or clearing its app data removes them.
 
 ## Scheduling behaviour
 
