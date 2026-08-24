@@ -26,7 +26,7 @@ class StoicWidgetProvider : AppWidgetProvider() {
                     context,
                     AppWidgetManager.getInstance(context),
                     appWidgetId,
-                    selectNewQuote = true,
+                    selectNewContent = true,
                 )
             }
         }
@@ -53,7 +53,7 @@ class StoicWidgetProvider : AppWidgetProvider() {
             context,
             appWidgetManager,
             appWidgetId,
-            selectNewQuote = false,
+            selectNewContent = false,
         )
     }
 
@@ -62,8 +62,9 @@ class StoicWidgetProvider : AppWidgetProvider() {
         val preferences = context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
         preferences.edit().apply {
             appWidgetIds.forEach { appWidgetId ->
-                remove(quoteTextKey(appWidgetId))
-                remove(quoteAuthorKey(appWidgetId))
+                remove(contentTextKey(appWidgetId))
+                remove(contentAttributionKey(appWidgetId))
+                remove(contentModeKey(appWidgetId))
             }
         }.apply()
     }
@@ -72,8 +73,9 @@ class StoicWidgetProvider : AppWidgetProvider() {
         private const val ACTION_RANDOMIZE_QUOTE =
             "com.donalgeraghty.stoicwidget.action.RANDOMIZE_QUOTE"
         private const val PREFERENCES_NAME = "stoic_widget_quotes"
-        private const val QUOTE_TEXT_KEY_PREFIX = "quote_text_"
-        private const val QUOTE_AUTHOR_KEY_PREFIX = "quote_author_"
+        private const val CONTENT_TEXT_KEY_PREFIX = "quote_text_"
+        private const val CONTENT_ATTRIBUTION_KEY_PREFIX = "quote_author_"
+        private const val CONTENT_MODE_KEY_PREFIX = "content_mode_"
 
         fun updateAllWidgets(
             context: Context,
@@ -90,17 +92,17 @@ class StoicWidgetProvider : AppWidgetProvider() {
             context: Context,
             manager: AppWidgetManager,
             appWidgetId: Int,
-            selectNewQuote: Boolean = true,
+            selectNewContent: Boolean = true,
         ) {
-            val quote = quoteForWidget(context, appWidgetId, selectNewQuote)
+            val content = contentForWidget(context, appWidgetId, selectNewContent)
             val layoutResource = layoutForWidget(manager, appWidgetId)
             val appearance = WidgetAppearance.resolve(context)
             val views = RemoteViews(
                 context.packageName,
                 layoutResource,
             ).apply {
-                setTextViewText(R.id.quoteText, "“${quote.text}”")
-                setTextViewText(R.id.quoteAuthor, quote.author)
+                setTextViewText(R.id.quoteText, "“${content.text}”")
+                setTextViewText(R.id.quoteAuthor, content.attribution.orEmpty())
                 setInt(R.id.widgetRoot, "setBackgroundResource", appearance.backgroundResource)
                 setTextColor(R.id.quoteText, appearance.quoteColor)
                 setTextColor(R.id.quoteAuthor, appearance.authorColor)
@@ -116,7 +118,11 @@ class StoicWidgetProvider : AppWidgetProvider() {
                 )
                 setViewVisibility(
                     R.id.quoteAuthor,
-                    if (appearance.showAttribution) View.VISIBLE else View.GONE,
+                    if (content.attribution != null && appearance.showAttribution) {
+                        View.VISIBLE
+                    } else {
+                        View.GONE
+                    },
                 )
 
                 val openAppIntent = Intent(context, MainActivity::class.java)
@@ -156,36 +162,48 @@ class StoicWidgetProvider : AppWidgetProvider() {
             else -> 13f
         }
 
-        private fun quoteForWidget(
+        private fun contentForWidget(
             context: Context,
             appWidgetId: Int,
-            selectNewQuote: Boolean,
-        ): Quote {
+            selectNewContent: Boolean,
+        ): WidgetContent {
             val preferences = context.getSharedPreferences(
                 PREFERENCES_NAME,
                 Context.MODE_PRIVATE,
             )
-            if (!selectNewQuote) {
-                val text = preferences.getString(quoteTextKey(appWidgetId), null)
-                val author = preferences.getString(quoteAuthorKey(appWidgetId), null)
-                if (text != null && author != null) {
-                    return Quote(text, author)
+            val selectedMode = WidgetPreferences(context).contentMode
+            if (!selectNewContent) {
+                val text = preferences.getString(contentTextKey(appWidgetId), null)
+                val attribution = preferences.getString(contentAttributionKey(appWidgetId), null)
+                val storedModeValue = preferences.getString(contentModeKey(appWidgetId), null)
+                val storedModeMatches = storedModeValue == selectedMode.name ||
+                    (storedModeValue == null && selectedMode == ContentMode.STOIC)
+                if (text != null && attribution != null && storedModeMatches) {
+                    return WidgetContent(
+                        text = text,
+                        attribution = attribution.takeIf { it.isNotBlank() },
+                        mode = selectedMode,
+                    )
                 }
             }
 
-            return QuoteRepository.randomQuote().also { quote ->
+            return WidgetContentSelector.random(context).also { content ->
                 preferences.edit()
-                    .putString(quoteTextKey(appWidgetId), quote.text)
-                    .putString(quoteAuthorKey(appWidgetId), quote.author)
+                    .putString(contentTextKey(appWidgetId), content.text)
+                    .putString(contentAttributionKey(appWidgetId), content.attribution.orEmpty())
+                    .putString(contentModeKey(appWidgetId), content.mode.name)
                     .apply()
             }
         }
 
-        private fun quoteTextKey(appWidgetId: Int): String =
-            "$QUOTE_TEXT_KEY_PREFIX$appWidgetId"
+        private fun contentTextKey(appWidgetId: Int): String =
+            "$CONTENT_TEXT_KEY_PREFIX$appWidgetId"
 
-        private fun quoteAuthorKey(appWidgetId: Int): String =
-            "$QUOTE_AUTHOR_KEY_PREFIX$appWidgetId"
+        private fun contentAttributionKey(appWidgetId: Int): String =
+            "$CONTENT_ATTRIBUTION_KEY_PREFIX$appWidgetId"
+
+        private fun contentModeKey(appWidgetId: Int): String =
+            "$CONTENT_MODE_KEY_PREFIX$appWidgetId"
 
         private fun layoutForWidget(
             manager: AppWidgetManager,
