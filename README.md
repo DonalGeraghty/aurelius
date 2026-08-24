@@ -1,6 +1,6 @@
 # Aurelius
 
-Aurelius is a small, offline Android home-screen widget that displays a Stoic thought and changes it approximately once per hour.
+Aurelius is a small, offline Android home-screen widget that displays either a bundled Stoic thought or one of your own personal messages and changes it approximately once per hour.
 
 The intended distribution method is **Google Play Internal Testing**, with the app kept private and installed only by the selected tester account. Aurelius does not need to be published publicly to Google Play.
 
@@ -9,23 +9,34 @@ This README is also intended to act as a **study guide and deployment record** f
 ## What it does
 
 - Native Android app written in Kotlin.
-- Home-screen widget with quote + attribution.
+- Home-screen widget with either a Stoic quote + attribution or a personal message.
+- Two global content modes: **Stoic quotes** and **My messages**.
+- Add, edit, and delete personal messages in the companion app.
+- Personal messages are stored locally on the device.
 - 72 bundled Stoic quotations/adaptations.
-- Pseudo-random quote on each widget update or manual refresh.
+- Pseudo-random content from the selected mode on each widget update or manual refresh.
 - Resizable from a compact approximately 2×2 layout, with 4×2 as the preferred initial size on Android 12 and newer.
 - Responsive compact, standard, and large typography as the widget is resized.
 - System, dark, light, and Android 12+ wallpaper-derived color themes.
 - Solid or transparent background, three font sizes, and optional attribution.
-- No internet permission, API, account, ads, analytics, server, or database.
+- No internet permission, API, account, ads, analytics, server, or remote database.
 - Tapping the widget opens the small companion app.
 - Tapping the displayed quote or attribution immediately chooses another pseudo-random quote.
-- Companion app previews the current quote and lets you manually refresh installed widgets.
+- Companion app previews the selected content, manages personal messages, switches modes, and lets you manually refresh installed widgets.
+
+## Content modes
+
+**Stoic quotes** is the default mode and preserves the original behaviour for existing installations. Quotes are selected from the bundled offline collection and may include attribution.
+
+**My messages** selects from messages created in the companion app. Messages can be added, edited, and deleted, are limited to 500 characters, and stay on the device in versioned `SharedPreferences` storage. The mode cannot be enabled until at least one message exists. Deleting the final message automatically returns Aurelius to Stoic mode so the widget is never left blank.
+
+The selected mode applies to all installed Aurelius widgets. Switching modes or changing the personal-message collection refreshes the widgets immediately. Personal messages are excluded from Android backup; uninstalling Aurelius or clearing its app data removes them.
 
 ## Scheduling behaviour
 
 The widget asks Android to update it every 3,600,000 ms (one hour) using `AppWidgetProviderInfo.updatePeriodMillis`.
 
-Android may batch or delay widget updates to protect battery life, so this should be understood as **roughly hourly**, not an exact alarm at `HH:00:00`. Each update selects a bundled quote using `Math.random()`; a manual refresh also selects a new pseudo-random quote.
+Android may batch or delay widget updates to protect battery life, so this should be understood as **roughly hourly**, not an exact alarm at `HH:00:00`. Each update selects pseudo-random content from the active mode; a manual refresh does the same.
 
 ## Android identity
 
@@ -468,10 +479,17 @@ Android Studio/ADB installation is a development option only. A managed device m
 ```text
 app/src/main/
 ├── java/com/donalgeraghty/stoicwidget/
+│   ├── ContentMode.kt
 │   ├── MainActivity.kt
+│   ├── MessageText.kt
+│   ├── PersonalMessage.kt
+│   ├── PersonalMessageRepository.kt
 │   ├── Quote.kt
 │   ├── QuoteRepository.kt
-│   └── StoicWidgetProvider.kt
+│   ├── StoicWidgetProvider.kt
+│   ├── WidgetAppearance.kt
+│   ├── WidgetContentSelector.kt
+│   └── WidgetPreferences.kt
 └── res/
     ├── drawable/
     ├── layout/
@@ -488,9 +506,9 @@ Aurelius is intentionally self-contained:
 - no backend
 - no advertising
 - no analytics
-- no remote quote service
+- no remote quote or message service
 
-Quotes are bundled in the app, so the widget continues to work offline.
+Stoic quotes are bundled in the app and personal messages are stored locally, so both modes continue to work offline.
 
 ## Possible next features
 

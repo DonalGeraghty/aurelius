@@ -1,14 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">StoicWidget</string>
-    <string name="app_description">A quiet Stoic thought on your home screen, changing every hour.</string>
-    <string name="widget_description">An hourly Stoic quote for your home screen.</string>
+    <string name="app_description">A quiet thought on your home screen, changing every hour.</string>
+    <string name="widget_description">Hourly Stoic quotes or your own personal messages.</string>
     <string name="widget_preview_quote">“Focus on what is yours to control.”</string>
     <string name="widget_preview_author">Stoic principle</string>
     <string name="refresh_widget">Refresh widget</string>
     <string name="widget_refreshed">Widget refreshed</string>
-    <string name="quote_count">%1$d offline quotes included</string>
+    <string name="quote_count">%1$d offline Stoic quotes included</string>
     <string name="add_widget_help">To add it: long-press an empty area of your Android home screen → Widgets → StoicWidget → drag the widget onto your home screen.</string>
+    <string name="content_mode_heading">Content mode</string>
+    <string name="use_my_messages">Use my messages</string>
+    <string name="mode_stoic">Current mode: Stoic quotes</string>
+    <string name="mode_personal">Current mode: My messages</string>
+    <string name="my_messages_heading">My messages</string>
+    <string name="message_hint">Write a quote, reminder, or message</string>
+    <string name="add_message">Add message</string>
+    <string name="message_added">Message added</string>
+    <string name="message_required">Enter a message of up to 500 characters</string>
+    <string name="add_message_before_enabling">Add at least one message before enabling My Messages mode</string>
+    <string name="no_personal_messages">No personal messages yet.</string>
+    <string name="edit">Edit</string>
+    <string name="edit_message">Edit message</string>
+    <string name="save">Save</string>
+    <string name="delete">Delete</string>
+    <string name="delete_message">Delete message?</string>
+    <string name="delete_message_confirmation">This message will be removed from this device.</string>
+    <string name="returned_to_stoic_mode">No personal messages remain, so Aurelius returned to Stoic mode</string>
+    <plurals name="personal_message_count">
+        <item quantity="one">%1$d saved message</item>
+        <item quantity="other">%1$d saved messages</item>
+    </plurals>
     <string name="appearance_heading">Widget appearance</string>
     <string name="theme_label">Color theme</string>
     <string name="font_size_label">Font size</string>

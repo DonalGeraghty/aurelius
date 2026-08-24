@@ -8,6 +8,10 @@ class WidgetPreferences(context: Context) {
         Context.MODE_PRIVATE,
     )
 
+    var contentMode: ContentMode
+        get() = ContentMode.fromStoredValue(preferences.getString(KEY_CONTENT_MODE, null))
+        set(value) = preferences.edit().putString(KEY_CONTENT_MODE, value.name).apply()
+
     var theme: Theme
         get() = enumValueOrDefault(preferences.getString(KEY_THEME, null), Theme.DARK)
         set(value) = preferences.edit().putString(KEY_THEME, value.name).apply()
@@ -39,6 +43,7 @@ class WidgetPreferences(context: Context) {
 
     companion object {
         private const val PREFERENCES_NAME = "widget_appearance"
+        private const val KEY_CONTENT_MODE = "content_mode"
         private const val KEY_THEME = "theme"
         private const val KEY_FONT_SIZE = "font_size"
         private const val KEY_TRANSPARENT_BACKGROUND = "transparent_background"

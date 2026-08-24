@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   build:
-    name: Build debug APK
+    name: Test and build debug APK
     runs-on: ubuntu-latest
 
     steps:
@@ -30,6 +30,9 @@ jobs:
         with:
           gradle-version: '9.4.1'
           cache-provider: basic
+
+      - name: Run unit tests
+        run: gradle :app:testDebugUnitTest --stacktrace
 
       - name: Build debug APK
         run: gradle :app:assembleDebug --stacktrace
