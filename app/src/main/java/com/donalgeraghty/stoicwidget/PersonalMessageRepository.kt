@@ -28,12 +28,10 @@ class PersonalMessageRepository(context: Context) {
                                 id = id,
                                 text = text,
                                 source = MessageText.normalizeSource(item.optString(KEY_SOURCE)),
-                                lightTextColor = MessageText.normalizeColor(
-                                    item.optString(KEY_LIGHT_TEXT_COLOR),
-                                ),
-                                darkTextColor = MessageText.normalizeColor(
-                                    item.optString(KEY_DARK_TEXT_COLOR),
-                                ),
+                                collection = MessageText.normalizeCollection(
+                                    item.optString(KEY_COLLECTION),
+                                ) ?: MessageText.DEFAULT_COLLECTION,
+                                enabled = item.optBoolean(KEY_ENABLED, true),
                                 createdAt = item.optLong(KEY_CREATED_AT, 0L),
                             ),
                         )
@@ -49,16 +47,15 @@ class PersonalMessageRepository(context: Context) {
     fun add(
         text: String,
         source: String = "",
-        lightTextColor: String = "",
-        darkTextColor: String = "",
+        collection: String = MessageText.DEFAULT_COLLECTION,
     ): PersonalMessage? {
         val normalizedText = MessageText.normalize(text) ?: return null
+        val normalizedCollection = MessageText.normalizeCollection(collection) ?: return null
         val message = PersonalMessage(
             id = UUID.randomUUID().toString(),
             text = normalizedText,
             source = MessageText.normalizeSource(source),
-            lightTextColor = MessageText.normalizeColor(lightTextColor),
-            darkTextColor = MessageText.normalizeColor(darkTextColor),
+            collection = normalizedCollection,
             createdAt = System.currentTimeMillis(),
         )
         save(all() + message)
@@ -70,10 +67,10 @@ class PersonalMessageRepository(context: Context) {
         id: String,
         text: String,
         source: String = "",
-        lightTextColor: String = "",
-        darkTextColor: String = "",
+        collection: String = MessageText.DEFAULT_COLLECTION,
     ): Boolean {
         val normalizedText = MessageText.normalize(text) ?: return false
+        val normalizedCollection = MessageText.normalizeCollection(collection) ?: return false
         var changed = false
         val updatedMessages = all().map { message ->
             if (message.id == id) {
@@ -81,8 +78,7 @@ class PersonalMessageRepository(context: Context) {
                 message.copy(
                     text = normalizedText,
                     source = MessageText.normalizeSource(source),
-                    lightTextColor = MessageText.normalizeColor(lightTextColor),
-                    darkTextColor = MessageText.normalizeColor(darkTextColor),
+                    collection = normalizedCollection,
                 )
             } else {
                 message
@@ -103,7 +99,58 @@ class PersonalMessageRepository(context: Context) {
 
     fun count(): Int = all().size
 
-    fun randomMessage(): PersonalMessage? = all().randomOrNull()
+    fun enabledCount(collection: String? = null): Int = all().count { message ->
+        message.enabled && (collection == null || message.collection == collection)
+    }
+
+    fun collections(): List<String> = all().map { it.collection }.distinct().sorted()
+
+    fun randomMessage(collection: String? = null): PersonalMessage? = all()
+        .filter { message ->
+            message.enabled && (collection == null || message.collection == collection)
+        }
+        .randomOrNull()
+
+    @Synchronized
+    fun duplicate(id: String): PersonalMessage? {
+        val source = all().firstOrNull { it.id == id } ?: return null
+        val duplicate = source.copy(
+            id = UUID.randomUUID().toString(),
+            createdAt = System.currentTimeMillis(),
+        )
+        val messages = all().toMutableList()
+        messages.add(messages.indexOfFirst { it.id == id } + 1, duplicate)
+        save(messages)
+        return duplicate
+    }
+
+    @Synchronized
+    fun setEnabled(id: String, enabled: Boolean): Boolean {
+        var changed = false
+        val messages = all().map { message ->
+            if (message.id == id) {
+                changed = message.enabled != enabled
+                message.copy(enabled = enabled)
+            } else {
+                message
+            }
+        }
+        if (changed) save(messages)
+        return changed
+    }
+
+    @Synchronized
+    fun moveBefore(movingId: String, targetId: String): Boolean {
+        if (movingId == targetId) return false
+        val messages = all().toMutableList()
+        val movingIndex = messages.indexOfFirst { it.id == movingId }
+        if (movingIndex < 0 || messages.none { it.id == targetId }) return false
+        val moving = messages.removeAt(movingIndex)
+        val targetIndex = messages.indexOfFirst { it.id == targetId }
+        messages.add(targetIndex, moving)
+        save(messages)
+        return true
+    }
 
     @Synchronized
     private fun save(messages: List<PersonalMessage>) {
@@ -114,8 +161,8 @@ class PersonalMessageRepository(context: Context) {
                     .put(KEY_ID, message.id)
                     .put(KEY_TEXT, message.text)
                     .put(KEY_SOURCE, message.source ?: "")
-                    .put(KEY_LIGHT_TEXT_COLOR, message.lightTextColor ?: "")
-                    .put(KEY_DARK_TEXT_COLOR, message.darkTextColor ?: "")
+                    .put(KEY_COLLECTION, message.collection)
+                    .put(KEY_ENABLED, message.enabled)
                     .put(KEY_CREATED_AT, message.createdAt),
             )
         }
@@ -128,8 +175,8 @@ class PersonalMessageRepository(context: Context) {
         private const val KEY_ID = "id"
         private const val KEY_TEXT = "text"
         private const val KEY_SOURCE = "source"
-        private const val KEY_LIGHT_TEXT_COLOR = "light_text_color"
-        private const val KEY_DARK_TEXT_COLOR = "dark_text_color"
+        private const val KEY_COLLECTION = "collection"
+        private const val KEY_ENABLED = "enabled"
         private const val KEY_CREATED_AT = "created_at"
     }
 }

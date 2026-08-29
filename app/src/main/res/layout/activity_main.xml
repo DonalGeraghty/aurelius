@@ -98,61 +98,25 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp" />
 
-        <EditText
-            android:id="@+id/messageInput"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:gravity="top|start"
-            android:hint="@string/message_hint"
-            android:inputType="textCapSentences|textMultiLine"
-            android:maxLength="500"
-            android:maxLines="6"
-            android:minLines="2" />
-
-        <EditText
-            android:id="@+id/sourceInput"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:hint="@string/source_hint"
-            android:inputType="textCapWords"
-            android:maxLength="100"
-            android:maxLines="1" />
-
-        <EditText
-            android:id="@+id/lightColorInput"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:hint="@string/light_text_color_hint"
-            android:inputType="textCapCharacters"
-            android:maxLength="9"
-            android:maxLines="1" />
-
-        <EditText
-            android:id="@+id/darkColorInput"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:hint="@string/dark_text_color_hint"
-            android:inputType="textCapCharacters"
-            android:maxLength="9"
-            android:maxLines="1" />
-
         <Button
-            android:id="@+id/addMessageButton"
+            android:id="@+id/manageCardsButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="@string/add_message" />
+            android:text="@string/manage_custom_cards" />
 
-        <LinearLayout
-            android:id="@+id/messagesContainer"
-            android:layout_width="match_parent"
+        <TextView
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:orientation="vertical" />
+            android:layout_marginTop="16dp"
+            android:labelFor="@id/collectionSpinner"
+            android:text="@string/widget_collection"
+            android:textStyle="bold" />
+
+        <Spinner
+            android:id="@+id/collectionSpinner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -174,6 +138,74 @@
             android:id="@+id/themeSpinner"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
+
+        <LinearLayout
+            android:id="@+id/lightColorControl"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:background="?android:attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:minHeight="48dp"
+            android:orientation="horizontal"
+            android:padding="8dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/light_text_color"
+                android:textStyle="bold" />
+
+            <View
+                android:id="@+id/lightColorSwatch"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:contentDescription="@string/choose_light_text_color" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/darkColorControl"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:background="?android:attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:minHeight="48dp"
+            android:orientation="horizontal"
+            android:padding="8dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/dark_text_color"
+                android:textStyle="bold" />
+
+            <View
+                android:id="@+id/darkColorSwatch"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:contentDescription="@string/choose_dark_text_color" />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/resetTextColorsButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/reset_text_colors" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="@string/global_text_colors_help"
+            android:textSize="13sp" />
 
         <TextView
             android:layout_width="wrap_content"

@@ -28,23 +28,13 @@
         android:maxLines="1" />
 
     <EditText
-        android:id="@+id/dialogLightColorInput"
+        android:id="@+id/dialogCollectionInput"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:hint="@string/light_text_color_hint"
-        android:inputType="textCapCharacters"
-        android:maxLength="9"
-        android:maxLines="1" />
-
-    <EditText
-        android:id="@+id/dialogDarkColorInput"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:hint="@string/dark_text_color_hint"
-        android:inputType="textCapCharacters"
-        android:maxLength="9"
+        android:hint="@string/collection_hint"
+        android:inputType="textCapWords"
+        android:maxLength="40"
         android:maxLines="1" />
 
 </LinearLayout>

@@ -18,6 +18,10 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".CustomCardsActivity"
+            android:exported="false" />
+
         <receiver
             android:name=".StoicWidgetProvider"
             android:exported="false">

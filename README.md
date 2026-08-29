@@ -22,13 +22,13 @@ This README is also intended to act as a **study guide and deployment record** f
 - No internet permission, API, account, ads, analytics, server, or remote database.
 - Tapping the widget opens the small companion app.
 - Tapping the displayed quote or attribution immediately chooses another pseudo-random quote.
-- Companion app previews the selected content, manages personal messages, switches modes, and lets you manually refresh installed widgets.
+- Companion app previews the selected content, manages searchable custom-card collections, switches modes, and lets you manually refresh installed widgets.
 
 ## Content modes
 
 **Stoic quotes** is the default mode and preserves the original behaviour for existing installations. Quotes are selected from the bundled offline collection and may include attribution.
 
-**My messages** selects from personal cards created in the companion app. Cards can be added, edited, and deleted, are limited to 500 characters, and may include an optional source plus separate light- and dark-mode text colors. Personal card text is title-cased on display, while the original input is retained for editing. Cards stay on the device in versioned `SharedPreferences` storage. The mode cannot be enabled until at least one card exists. Deleting the final card automatically returns Aurelius to Stoic mode so the widget is never left blank.
+**My messages** selects from personal cards created in the companion app. The dedicated Custom Cards screen supports search, collections, duplication, temporary disabling, deletion, and long-press drag ordering. Cards are limited to 500 characters and may include an optional source. Personal card text is title-cased on display, while the original input is retained for editing. The widget can rotate through every enabled card or one selected collection. Global light- and dark-mode text colors are selected with the color picker under Widget appearance and apply to every card. Cards stay on the device in versioned `SharedPreferences` storage. The mode cannot be enabled until at least one enabled card exists. Disabling or deleting the final enabled card automatically returns Aurelius to Stoic mode so the widget is never left blank.
 
 The selected mode applies to all installed Aurelius widgets. Switching modes or changing the personal-message collection refreshes the widgets immediately. Personal messages are excluded from Android backup; uninstalling Aurelius or clearing its app data removes them.
 
