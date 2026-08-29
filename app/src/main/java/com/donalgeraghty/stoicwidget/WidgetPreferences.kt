@@ -28,6 +28,37 @@ class WidgetPreferences(context: Context) {
         get() = preferences.getBoolean(KEY_SHOW_ATTRIBUTION, true)
         set(value) = preferences.edit().putBoolean(KEY_SHOW_ATTRIBUTION, value).apply()
 
+    var lightTextColor: Int?
+        get() = storedColor(KEY_LIGHT_TEXT_COLOR)
+        set(value) = storeColor(KEY_LIGHT_TEXT_COLOR, value)
+
+    var darkTextColor: Int?
+        get() = storedColor(KEY_DARK_TEXT_COLOR)
+        set(value) = storeColor(KEY_DARK_TEXT_COLOR, value)
+
+    var selectedCollection: String?
+        get() = preferences.getString(KEY_SELECTED_COLLECTION, null)?.takeIf { it.isNotBlank() }
+        set(value) = preferences.edit().apply {
+            if (value.isNullOrBlank()) remove(KEY_SELECTED_COLLECTION)
+            else putString(KEY_SELECTED_COLLECTION, value)
+        }.apply()
+
+    fun resetTextColors() {
+        preferences.edit()
+            .remove(KEY_LIGHT_TEXT_COLOR)
+            .remove(KEY_DARK_TEXT_COLOR)
+            .apply()
+    }
+
+    private fun storedColor(key: String): Int? =
+        if (preferences.contains(key)) preferences.getInt(key, 0) else null
+
+    private fun storeColor(key: String, value: Int?) {
+        preferences.edit().apply {
+            if (value == null) remove(key) else putInt(key, value)
+        }.apply()
+    }
+
     enum class Theme {
         SYSTEM,
         DARK,
@@ -48,6 +79,9 @@ class WidgetPreferences(context: Context) {
         private const val KEY_FONT_SIZE = "font_size"
         private const val KEY_TRANSPARENT_BACKGROUND = "transparent_background"
         private const val KEY_SHOW_ATTRIBUTION = "show_attribution"
+        private const val KEY_LIGHT_TEXT_COLOR = "light_text_color"
+        private const val KEY_DARK_TEXT_COLOR = "dark_text_color"
+        private const val KEY_SELECTED_COLLECTION = "selected_collection"
 
         private inline fun <reified T : Enum<T>> enumValueOrDefault(
             storedValue: String?,

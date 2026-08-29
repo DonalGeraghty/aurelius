@@ -13,7 +13,7 @@ data class WidgetAppearance(
     val showAttribution: Boolean,
 ) {
     companion object {
-        fun resolve(context: Context, content: WidgetContent? = null): WidgetAppearance {
+        fun resolve(context: Context): WidgetAppearance {
             val preferences = WidgetPreferences(context)
             val theme = effectiveTheme(context, preferences.theme)
             val transparent = preferences.transparentBackground
@@ -25,23 +25,25 @@ data class WidgetAppearance(
                 else -> R.drawable.widget_background
             }
 
-            val defaultQuoteColor = when (theme) {
-                WidgetPreferences.Theme.LIGHT -> context.getColor(R.color.widget_text_light)
-                WidgetPreferences.Theme.WALLPAPER -> context.getColor(R.color.widget_dynamic_text)
-                else -> context.getColor(R.color.widget_text_dark)
-            }
-            val defaultAuthorColor = when (theme) {
-                WidgetPreferences.Theme.LIGHT -> context.getColor(R.color.widget_secondary_light)
-                WidgetPreferences.Theme.WALLPAPER -> context.getColor(R.color.widget_dynamic_secondary)
-                else -> context.getColor(R.color.widget_secondary_dark)
-            }
             val customColor = when (theme) {
-                WidgetPreferences.Theme.LIGHT -> content?.lightTextColor
-                WidgetPreferences.Theme.DARK -> content?.darkTextColor
+                WidgetPreferences.Theme.LIGHT -> preferences.lightTextColor
+                WidgetPreferences.Theme.DARK -> preferences.darkTextColor
                 else -> null
-            }?.let(::parseColorOrNull)
-            val quoteColor = customColor ?: defaultQuoteColor
-            val authorColor = customColor?.let(::secondaryColor) ?: defaultAuthorColor
+            }
+            val quoteColor = when (theme) {
+                WidgetPreferences.Theme.LIGHT -> customColor
+                    ?: context.getColor(R.color.widget_text_light)
+                WidgetPreferences.Theme.WALLPAPER -> context.getColor(R.color.widget_dynamic_text)
+                else -> customColor
+                    ?: context.getColor(R.color.widget_text_dark)
+            }
+            val authorColor = when (theme) {
+                WidgetPreferences.Theme.WALLPAPER -> context.getColor(R.color.widget_dynamic_secondary)
+                WidgetPreferences.Theme.LIGHT -> customColor?.let(::secondaryColor)
+                    ?: context.getColor(R.color.widget_secondary_light)
+                else -> customColor?.let(::secondaryColor)
+                    ?: context.getColor(R.color.widget_secondary_dark)
+            }
 
             return WidgetAppearance(
                 backgroundResource = backgroundResource,
@@ -51,13 +53,6 @@ data class WidgetAppearance(
                 showAttribution = preferences.showAttribution,
             )
         }
-
-        private fun parseColorOrNull(value: String): Int? =
-            try {
-                Color.parseColor(value)
-            } catch (_: IllegalArgumentException) {
-                null
-            }
 
         private fun secondaryColor(color: Int): Int {
             val alpha = (Color.alpha(color) * 0.75f).toInt()

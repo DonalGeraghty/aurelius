@@ -6,8 +6,6 @@ data class WidgetContent(
     val text: String,
     val attribution: String?,
     val mode: ContentMode,
-    val lightTextColor: String? = null,
-    val darkTextColor: String? = null,
 )
 
 object WidgetContentFormatter {
@@ -32,14 +30,13 @@ object WidgetContentSelector {
     fun random(context: Context): WidgetContent {
         val mode = WidgetPreferences(context).contentMode
         if (mode == ContentMode.PERSONAL) {
-            val message = PersonalMessageRepository(context).randomMessage()
+            val selectedCollection = WidgetPreferences(context).selectedCollection
+            val message = PersonalMessageRepository(context).randomMessage(selectedCollection)
             if (message != null) {
                 return WidgetContent(
                     text = message.text,
                     attribution = message.source,
                     mode = ContentMode.PERSONAL,
-                    lightTextColor = message.lightTextColor,
-                    darkTextColor = message.darkTextColor,
                 )
             }
         }

@@ -3,8 +3,8 @@ package com.donalgeraghty.stoicwidget
 object MessageText {
     const val MAX_LENGTH = 500
     const val SOURCE_MAX_LENGTH = 100
-
-    private val colorPattern = Regex("^#[0-9A-Fa-f]{6}([0-9A-Fa-f]{2})?$")
+    const val COLLECTION_MAX_LENGTH = 40
+    const val DEFAULT_COLLECTION = "General"
 
     fun normalize(value: String): String? =
         value.trim().takeIf { it.isNotEmpty() && it.length <= MAX_LENGTH }
@@ -16,13 +16,10 @@ object MessageText {
         .trim()
         .takeIf { it.isNotEmpty() && it.length <= SOURCE_MAX_LENGTH }
 
-    fun normalizeColor(value: String): String? = value
+    fun normalizeCollection(value: String): String? = value
         .trim()
-        .takeIf { colorPattern.matches(it) }
-        ?.uppercase()
-
-    fun isValidOptionalColor(value: String): Boolean =
-        value.isBlank() || normalizeColor(value) != null
+        .replace(Regex("\\s+"), " ")
+        .takeIf { it.isNotEmpty() && it.length <= COLLECTION_MAX_LENGTH }
 
     fun titleCaseForDisplay(value: String): String {
         val result = StringBuilder(value.length)

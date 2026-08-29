@@ -1,15 +1,14 @@
 package com.donalgeraghty.stoicwidget
 
 import android.app.Activity
-import android.app.AlertDialog
+import android.content.Intent
+import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
-import android.text.InputFilter
-import android.view.LayoutInflater
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Button
-import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.Spinner
 import android.widget.Switch
@@ -23,12 +22,10 @@ class MainActivity : Activity() {
     private lateinit var previewCard: LinearLayout
     private lateinit var personalModeSwitch: Switch
     private lateinit var modeStatus: TextView
-    private lateinit var messageInput: EditText
-    private lateinit var sourceInput: EditText
-    private lateinit var lightColorInput: EditText
-    private lateinit var darkColorInput: EditText
     private lateinit var personalMessageCount: TextView
-    private lateinit var messagesContainer: LinearLayout
+    private lateinit var collectionSpinner: Spinner
+    private lateinit var lightColorSwatch: View
+    private lateinit var darkColorSwatch: View
     private lateinit var attributionSwitch: Switch
     private lateinit var preferences: WidgetPreferences
     private lateinit var messageRepository: PersonalMessageRepository
@@ -38,91 +35,110 @@ class MainActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
         quoteText = findViewById(R.id.previewQuote)
         quoteAuthor = findViewById(R.id.previewAuthor)
         contentCount = findViewById(R.id.contentCount)
         previewCard = findViewById(R.id.previewCard)
         personalModeSwitch = findViewById(R.id.personalModeSwitch)
         modeStatus = findViewById(R.id.modeStatus)
-        messageInput = findViewById(R.id.messageInput)
-        sourceInput = findViewById(R.id.sourceInput)
-        lightColorInput = findViewById(R.id.lightColorInput)
-        darkColorInput = findViewById(R.id.darkColorInput)
         personalMessageCount = findViewById(R.id.personalMessageCount)
-        messagesContainer = findViewById(R.id.messagesContainer)
+        collectionSpinner = findViewById(R.id.collectionSpinner)
+        lightColorSwatch = findViewById(R.id.lightColorSwatch)
+        darkColorSwatch = findViewById(R.id.darkColorSwatch)
         attributionSwitch = findViewById(R.id.showAttributionSwitch)
         preferences = WidgetPreferences(this)
         messageRepository = PersonalMessageRepository(this)
-        if (
-            preferences.contentMode == ContentMode.PERSONAL &&
-            messageRepository.count() == 0
-        ) {
-            preferences.contentMode = ContentMode.STOIC
-        }
+        ensureValidPersonalMode()
         previewContent = WidgetContentSelector.random(this)
-
         configureModeControls()
-        configureMessageControls()
+        configureCardControls()
         configureAppearanceControls()
-
-        settingUpControls = false
-        renderPreview()
-        renderMessages()
-
         findViewById<Button>(R.id.refreshButton).setOnClickListener {
             StoicWidgetProvider.updateAllWidgets(this)
             previewContent = WidgetContentSelector.random(this)
             renderPreview()
             Toast.makeText(this, R.string.widget_refreshed, Toast.LENGTH_SHORT).show()
         }
+        settingUpControls = false
+        renderCardSummary()
+        renderPreview()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (!::messageRepository.isInitialized) return
+        ensureValidPersonalMode()
+        configureCollectionSpinner()
+        renderCardSummary()
+        previewContent = WidgetContentSelector.random(this)
+        renderPreview()
+    }
+
+    private fun ensureValidPersonalMode() {
+        val selectedCollection = preferences.selectedCollection
+        if (
+            selectedCollection != null &&
+            messageRepository.enabledCount(selectedCollection) == 0
+        ) {
+            preferences.selectedCollection = null
+        }
+        if (preferences.contentMode == ContentMode.PERSONAL && messageRepository.enabledCount() == 0) {
+            preferences.contentMode = ContentMode.STOIC
+            if (::personalModeSwitch.isInitialized) {
+                settingUpControls = true
+                personalModeSwitch.isChecked = false
+                settingUpControls = false
+            }
+        }
     }
 
     private fun configureModeControls() {
         personalModeSwitch.isChecked = preferences.contentMode == ContentMode.PERSONAL
-        personalModeSwitch.setOnCheckedChangeListener { _, isChecked ->
+        personalModeSwitch.setOnCheckedChangeListener { _, checked ->
             if (settingUpControls) return@setOnCheckedChangeListener
-
-            if (isChecked && messageRepository.count() == 0) {
+            if (checked && messageRepository.enabledCount() == 0) {
                 settingUpControls = true
                 personalModeSwitch.isChecked = false
                 settingUpControls = false
                 Toast.makeText(this, R.string.add_message_before_enabling, Toast.LENGTH_LONG).show()
                 return@setOnCheckedChangeListener
             }
-
-            preferences.contentMode = if (isChecked) {
-                ContentMode.PERSONAL
-            } else {
-                ContentMode.STOIC
-            }
+            preferences.contentMode = if (checked) ContentMode.PERSONAL else ContentMode.STOIC
             refreshContent()
         }
     }
 
-    private fun configureMessageControls() {
-        messageInput.filters = arrayOf(InputFilter.LengthFilter(MessageText.MAX_LENGTH))
-        sourceInput.filters = arrayOf(InputFilter.LengthFilter(MessageText.SOURCE_MAX_LENGTH))
-        findViewById<Button>(R.id.addMessageButton).setOnClickListener {
-            if (!colorsAreValid(lightColorInput, darkColorInput)) return@setOnClickListener
-            val message = messageRepository.add(
-                text = messageInput.text.toString(),
-                source = sourceInput.text.toString(),
-                lightTextColor = lightColorInput.text.toString(),
-                darkTextColor = darkColorInput.text.toString(),
-            )
-            if (message == null) {
-                Toast.makeText(this, R.string.message_required, Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
+    private fun configureCardControls() {
+        findViewById<Button>(R.id.manageCardsButton).setOnClickListener {
+            startActivity(Intent(this, CustomCardsActivity::class.java))
+        }
+        configureCollectionSpinner()
+    }
+
+    private fun configureCollectionSpinner() {
+        val options = listOf(getString(R.string.all_collections)) + messageRepository.collections()
+        val selected = preferences.selectedCollection
+        val selectedPosition = selected?.let(options::indexOf)?.takeIf { it >= 0 } ?: 0
+        if (selectedPosition == 0 && selected != null) preferences.selectedCollection = null
+        collectionSpinner.adapter = ArrayAdapter(
+            this,
+            android.R.layout.simple_spinner_item,
+            options,
+        ).apply { setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item) }
+        collectionSpinner.setSelection(selectedPosition)
+        collectionSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            private var ignoreInitialSelection = true
+
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                if (ignoreInitialSelection) {
+                    ignoreInitialSelection = false
+                    return
+                }
+                preferences.selectedCollection = options.getOrNull(position)?.takeIf { position > 0 }
+                if (preferences.contentMode == ContentMode.PERSONAL) refreshContent()
             }
 
-            messageInput.text.clear()
-            sourceInput.text.clear()
-            lightColorInput.text.clear()
-            darkColorInput.text.clear()
-            renderMessages()
-            if (preferences.contentMode == ContentMode.PERSONAL) refreshContent()
-            Toast.makeText(this, R.string.message_added, Toast.LENGTH_SHORT).show()
+            override fun onNothingSelected(parent: AdapterView<*>?) = Unit
         }
     }
 
@@ -130,213 +146,105 @@ class MainActivity : Activity() {
         val themeSpinner = findViewById<Spinner>(R.id.themeSpinner)
         val fontSizeSpinner = findViewById<Spinner>(R.id.fontSizeSpinner)
         val transparentSwitch = findViewById<Switch>(R.id.transparentBackgroundSwitch)
-
+        findViewById<View>(R.id.lightColorControl).setOnClickListener {
+            ColorPickerDialog.show(this, getString(R.string.choose_light_text_color), currentLightTextColor()) { color ->
+                preferences.lightTextColor = color
+                updateColorSwatches()
+                appearanceChanged()
+            }
+        }
+        findViewById<View>(R.id.darkColorControl).setOnClickListener {
+            ColorPickerDialog.show(this, getString(R.string.choose_dark_text_color), currentDarkTextColor()) { color ->
+                preferences.darkTextColor = color
+                updateColorSwatches()
+                appearanceChanged()
+            }
+        }
+        findViewById<Button>(R.id.resetTextColorsButton).setOnClickListener {
+            preferences.resetTextColors()
+            updateColorSwatches()
+            appearanceChanged()
+        }
+        updateColorSwatches()
         themeSpinner.adapter = ArrayAdapter.createFromResource(
             this,
             R.array.widget_theme_options,
             android.R.layout.simple_spinner_item,
-        ).apply {
-            setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        }
+        ).apply { setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item) }
         themeSpinner.setSelection(preferences.theme.ordinal)
-        themeSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(
-                parent: AdapterView<*>?,
-                view: View?,
-                position: Int,
-                id: Long,
-            ) {
-                preferences.theme = WidgetPreferences.Theme.values()[position]
-                appearanceChanged()
-            }
-
-            override fun onNothingSelected(parent: AdapterView<*>?) = Unit
+        themeSpinner.onItemSelectedListener = enumSpinnerListener { position ->
+            preferences.theme = WidgetPreferences.Theme.values()[position]
+            appearanceChanged()
         }
-
         fontSizeSpinner.adapter = ArrayAdapter.createFromResource(
             this,
             R.array.widget_font_size_options,
             android.R.layout.simple_spinner_item,
-        ).apply {
-            setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        }
+        ).apply { setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item) }
         fontSizeSpinner.setSelection(preferences.fontSize.ordinal)
-        fontSizeSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(
-                parent: AdapterView<*>?,
-                view: View?,
-                position: Int,
-                id: Long,
-            ) {
-                preferences.fontSize = WidgetPreferences.FontSize.values()[position]
-                appearanceChanged()
-            }
-
-            override fun onNothingSelected(parent: AdapterView<*>?) = Unit
-        }
-
-        transparentSwitch.isChecked = preferences.transparentBackground
-        transparentSwitch.setOnCheckedChangeListener { _, isChecked ->
-            preferences.transparentBackground = isChecked
+        fontSizeSpinner.onItemSelectedListener = enumSpinnerListener { position ->
+            preferences.fontSize = WidgetPreferences.FontSize.values()[position]
             appearanceChanged()
         }
-
+        transparentSwitch.isChecked = preferences.transparentBackground
+        transparentSwitch.setOnCheckedChangeListener { _, checked ->
+            preferences.transparentBackground = checked
+            appearanceChanged()
+        }
         attributionSwitch.isChecked = preferences.showAttribution
-        attributionSwitch.setOnCheckedChangeListener { _, isChecked ->
-            preferences.showAttribution = isChecked
+        attributionSwitch.setOnCheckedChangeListener { _, checked ->
+            preferences.showAttribution = checked
             appearanceChanged()
         }
     }
 
+    private fun enumSpinnerListener(action: (Int) -> Unit) = object : AdapterView.OnItemSelectedListener {
+        override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) = action(position)
+        override fun onNothingSelected(parent: AdapterView<*>?) = Unit
+    }
+
+    private fun renderCardSummary() {
+        val count = messageRepository.count()
+        personalMessageCount.text = resources.getQuantityString(R.plurals.personal_message_count, count, count)
+    }
+
     private fun renderPreview() {
-        val appearance = WidgetAppearance.resolve(this, previewContent)
-        val isPersonalMode = preferences.contentMode == ContentMode.PERSONAL
+        val appearance = WidgetAppearance.resolve(this)
+        val isPersonal = preferences.contentMode == ContentMode.PERSONAL
         quoteText.text = WidgetContentFormatter.quote(previewContent)
         quoteAuthor.text = WidgetContentFormatter.attribution(previewContent).orEmpty()
-        contentCount.text = if (isPersonalMode) {
-            resources.getQuantityString(
-                R.plurals.personal_message_count,
-                messageRepository.count(),
-                messageRepository.count(),
-            )
+        contentCount.text = if (isPersonal) {
+            val count = messageRepository.enabledCount(preferences.selectedCollection)
+            resources.getQuantityString(R.plurals.active_card_count, count, count)
         } else {
             getString(R.string.quote_count, QuoteRepository.size())
         }
-        modeStatus.text = getString(
-            if (isPersonalMode) R.string.mode_personal else R.string.mode_stoic,
-        )
+        modeStatus.text = getString(if (isPersonal) R.string.mode_personal else R.string.mode_stoic)
         previewCard.setBackgroundResource(appearance.backgroundResource)
         quoteText.setTextColor(appearance.quoteColor)
         quoteAuthor.setTextColor(appearance.authorColor)
         quoteText.textSize = 20f * appearance.fontScale
         quoteAuthor.textSize = 14f * appearance.fontScale
         quoteAuthor.visibility = if (
-            WidgetContentFormatter.attribution(previewContent) != null &&
-                appearance.showAttribution
-        ) {
-            View.VISIBLE
-        } else {
-            View.GONE
-        }
-        attributionSwitch.isEnabled = true
+            WidgetContentFormatter.attribution(previewContent) != null && appearance.showAttribution
+        ) View.VISIBLE else View.GONE
     }
 
-    private fun renderMessages() {
-        val messages = messageRepository.all()
-        personalMessageCount.text = resources.getQuantityString(
-            R.plurals.personal_message_count,
-            messages.size,
-            messages.size,
-        )
-        messagesContainer.removeAllViews()
-
-        if (messages.isEmpty()) {
-            TextView(this).apply {
-                setText(R.string.no_personal_messages)
-                setPadding(0, 12, 0, 12)
-                messagesContainer.addView(this)
-            }
-            return
-        }
-
-        messages.asReversed().forEach { message ->
-            val row = LayoutInflater.from(this)
-                .inflate(R.layout.item_personal_message, messagesContainer, false)
-            row.findViewById<TextView>(R.id.messageText).text =
-                MessageText.titleCaseForDisplay(message.text)
-            row.findViewById<TextView>(R.id.messageSource).apply {
-                text = MessageText.attributionForDisplay(message.source).orEmpty()
-                visibility = if (message.source == null) View.GONE else View.VISIBLE
-            }
-            row.findViewById<Button>(R.id.editMessageButton).setOnClickListener {
-                showEditDialog(message)
-            }
-            row.findViewById<Button>(R.id.deleteMessageButton).setOnClickListener {
-                confirmDelete(message)
-            }
-            messagesContainer.addView(row)
-        }
+    private fun updateColorSwatches() {
+        setSwatchColor(lightColorSwatch, currentLightTextColor())
+        setSwatchColor(darkColorSwatch, currentDarkTextColor())
     }
 
-    private fun showEditDialog(message: PersonalMessage) {
-        val container = LayoutInflater.from(this).inflate(R.layout.dialog_personal_message, null)
-        val input = container.findViewById<EditText>(R.id.dialogMessageInput).apply {
-            setText(message.text)
-            setSelection(text.length)
-            filters = arrayOf(InputFilter.LengthFilter(MessageText.MAX_LENGTH))
-        }
-        val source = container.findViewById<EditText>(R.id.dialogSourceInput).apply {
-            setText(message.source.orEmpty())
-            filters = arrayOf(InputFilter.LengthFilter(MessageText.SOURCE_MAX_LENGTH))
-        }
-        val lightColor = container.findViewById<EditText>(R.id.dialogLightColorInput).apply {
-            setText(message.lightTextColor.orEmpty())
-        }
-        val darkColor = container.findViewById<EditText>(R.id.dialogDarkColorInput).apply {
-            setText(message.darkTextColor.orEmpty())
-        }
+    private fun currentLightTextColor(): Int = preferences.lightTextColor ?: getColor(R.color.widget_text_light)
+    private fun currentDarkTextColor(): Int = preferences.darkTextColor ?: getColor(R.color.widget_text_dark)
 
-        val dialog = AlertDialog.Builder(this)
-            .setTitle(R.string.edit_message)
-            .setView(container)
-            .setNegativeButton(android.R.string.cancel, null)
-            .setPositiveButton(R.string.save, null)
-            .create()
-        dialog.setOnShowListener {
-            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-                if (!colorsAreValid(lightColor, darkColor)) return@setOnClickListener
-                if (messageRepository.update(
-                        id = message.id,
-                        text = input.text.toString(),
-                        source = source.text.toString(),
-                        lightTextColor = lightColor.text.toString(),
-                        darkTextColor = darkColor.text.toString(),
-                    )
-                ) {
-                    dialog.dismiss()
-                    renderMessages()
-                    if (preferences.contentMode == ContentMode.PERSONAL) refreshContent()
-                } else {
-                    Toast.makeText(this, R.string.message_required, Toast.LENGTH_SHORT).show()
-                }
-            }
+    private fun setSwatchColor(view: View, color: Int) {
+        val density = resources.displayMetrics.density
+        view.background = GradientDrawable().apply {
+            cornerRadius = 6f * density
+            setColor(color)
+            setStroke(density.toInt(), Color.GRAY)
         }
-        dialog.show()
-    }
-
-    private fun colorsAreValid(lightColor: EditText, darkColor: EditText): Boolean {
-        if (
-            MessageText.isValidOptionalColor(lightColor.text.toString()) &&
-            MessageText.isValidOptionalColor(darkColor.text.toString())
-        ) {
-            return true
-        }
-        Toast.makeText(this, R.string.invalid_text_color, Toast.LENGTH_LONG).show()
-        return false
-    }
-
-    private fun confirmDelete(message: PersonalMessage) {
-        AlertDialog.Builder(this)
-            .setTitle(R.string.delete_message)
-            .setMessage(R.string.delete_message_confirmation)
-            .setNegativeButton(android.R.string.cancel, null)
-            .setPositiveButton(R.string.delete) { _, _ ->
-                if (!messageRepository.delete(message.id)) return@setPositiveButton
-
-                if (
-                    messageRepository.count() == 0 &&
-                    preferences.contentMode == ContentMode.PERSONAL
-                ) {
-                    preferences.contentMode = ContentMode.STOIC
-                    settingUpControls = true
-                    personalModeSwitch.isChecked = false
-                    settingUpControls = false
-                    Toast.makeText(this, R.string.returned_to_stoic_mode, Toast.LENGTH_LONG).show()
-                }
-                renderMessages()
-                refreshContent()
-            }
-            .show()
     }
 
     private fun refreshContent() {

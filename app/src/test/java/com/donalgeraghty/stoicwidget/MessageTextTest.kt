@@ -35,11 +35,9 @@ class MessageTextTest {
     }
 
     @Test
-    fun validatesAndNormalizesOptionalColors() {
-        assertEquals("#AABBCC", MessageText.normalizeColor(" #aabbcc "))
-        assertEquals("#80AABBCC", MessageText.normalizeColor("#80aabbcc"))
-        assertNull(MessageText.normalizeColor("blue"))
-        assertEquals(true, MessageText.isValidOptionalColor(""))
-        assertEquals(false, MessageText.isValidOptionalColor("#12345"))
+    fun normalizesCollectionNames() {
+        assertEquals("Morning Focus", MessageText.normalizeCollection("  Morning   Focus  "))
+        assertNull(MessageText.normalizeCollection("   "))
     }
+
 }

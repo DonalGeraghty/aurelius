@@ -5,6 +5,6 @@ data class PersonalMessage(
     val text: String,
     val createdAt: Long,
     val source: String? = null,
-    val lightTextColor: String? = null,
-    val darkTextColor: String? = null,
+    val collection: String = MessageText.DEFAULT_COLLECTION,
+    val enabled: Boolean = true,
 )

@@ -20,8 +20,22 @@
         android:layout_marginTop="4dp"
         android:textSize="14sp" />
 
+    <TextView
+        android:id="@+id/messageCollection"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:textStyle="bold" />
+
+    <Switch
+        android:id="@+id/messageEnabledSwitch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="48dp"
+        android:text="@string/include_in_rotation" />
+
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="end"
         android:layout_marginTop="6dp"
@@ -29,15 +43,28 @@
 
         <Button
             android:id="@+id/editMessageButton"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:minWidth="0dp"
             android:text="@string/edit" />
 
         <Button
-            android:id="@+id/deleteMessageButton"
-            android:layout_width="wrap_content"
+            android:id="@+id/duplicateMessageButton"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
+            android:layout_marginStart="4dp"
+            android:layout_weight="1"
+            android:minWidth="0dp"
+            android:text="@string/duplicate" />
+
+        <Button
+            android:id="@+id/deleteMessageButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_weight="1"
+            android:minWidth="0dp"
             android:text="@string/delete" />
     </LinearLayout>
 </LinearLayout>
