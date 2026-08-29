@@ -65,6 +65,8 @@ class StoicWidgetProvider : AppWidgetProvider() {
                 remove(contentTextKey(appWidgetId))
                 remove(contentAttributionKey(appWidgetId))
                 remove(contentModeKey(appWidgetId))
+                remove(contentLightColorKey(appWidgetId))
+                remove(contentDarkColorKey(appWidgetId))
             }
         }.apply()
     }
@@ -76,6 +78,8 @@ class StoicWidgetProvider : AppWidgetProvider() {
         private const val CONTENT_TEXT_KEY_PREFIX = "quote_text_"
         private const val CONTENT_ATTRIBUTION_KEY_PREFIX = "quote_author_"
         private const val CONTENT_MODE_KEY_PREFIX = "content_mode_"
+        private const val CONTENT_LIGHT_COLOR_KEY_PREFIX = "light_text_color_"
+        private const val CONTENT_DARK_COLOR_KEY_PREFIX = "dark_text_color_"
 
         fun updateAllWidgets(
             context: Context,
@@ -96,13 +100,16 @@ class StoicWidgetProvider : AppWidgetProvider() {
         ) {
             val content = contentForWidget(context, appWidgetId, selectNewContent)
             val layoutResource = layoutForWidget(manager, appWidgetId)
-            val appearance = WidgetAppearance.resolve(context)
+            val appearance = WidgetAppearance.resolve(context, content)
             val views = RemoteViews(
                 context.packageName,
                 layoutResource,
             ).apply {
-                setTextViewText(R.id.quoteText, "“${content.text}”")
-                setTextViewText(R.id.quoteAuthor, content.attribution.orEmpty())
+                setTextViewText(R.id.quoteText, WidgetContentFormatter.quote(content))
+                setTextViewText(
+                    R.id.quoteAuthor,
+                    WidgetContentFormatter.attribution(content).orEmpty(),
+                )
                 setInt(R.id.widgetRoot, "setBackgroundResource", appearance.backgroundResource)
                 setTextColor(R.id.quoteText, appearance.quoteColor)
                 setTextColor(R.id.quoteAuthor, appearance.authorColor)
@@ -118,7 +125,10 @@ class StoicWidgetProvider : AppWidgetProvider() {
                 )
                 setViewVisibility(
                     R.id.quoteAuthor,
-                    if (content.attribution != null && appearance.showAttribution) {
+                    if (
+                        WidgetContentFormatter.attribution(content) != null &&
+                        appearance.showAttribution
+                    ) {
                         View.VISIBLE
                     } else {
                         View.GONE
@@ -176,6 +186,12 @@ class StoicWidgetProvider : AppWidgetProvider() {
                 val text = preferences.getString(contentTextKey(appWidgetId), null)
                 val attribution = preferences.getString(contentAttributionKey(appWidgetId), null)
                 val storedModeValue = preferences.getString(contentModeKey(appWidgetId), null)
+                val lightTextColor = preferences
+                    .getString(contentLightColorKey(appWidgetId), null)
+                    ?.takeIf { it.isNotBlank() }
+                val darkTextColor = preferences
+                    .getString(contentDarkColorKey(appWidgetId), null)
+                    ?.takeIf { it.isNotBlank() }
                 val storedModeMatches = storedModeValue == selectedMode.name ||
                     (storedModeValue == null && selectedMode == ContentMode.STOIC)
                 if (text != null && attribution != null && storedModeMatches) {
@@ -183,6 +199,8 @@ class StoicWidgetProvider : AppWidgetProvider() {
                         text = text,
                         attribution = attribution.takeIf { it.isNotBlank() },
                         mode = selectedMode,
+                        lightTextColor = lightTextColor,
+                        darkTextColor = darkTextColor,
                     )
                 }
             }
@@ -192,6 +210,14 @@ class StoicWidgetProvider : AppWidgetProvider() {
                     .putString(contentTextKey(appWidgetId), content.text)
                     .putString(contentAttributionKey(appWidgetId), content.attribution.orEmpty())
                     .putString(contentModeKey(appWidgetId), content.mode.name)
+                    .putString(
+                        contentLightColorKey(appWidgetId),
+                        content.lightTextColor.orEmpty(),
+                    )
+                    .putString(
+                        contentDarkColorKey(appWidgetId),
+                        content.darkTextColor.orEmpty(),
+                    )
                     .apply()
             }
         }
@@ -204,6 +230,12 @@ class StoicWidgetProvider : AppWidgetProvider() {
 
         private fun contentModeKey(appWidgetId: Int): String =
             "$CONTENT_MODE_KEY_PREFIX$appWidgetId"
+
+        private fun contentLightColorKey(appWidgetId: Int): String =
+            "$CONTENT_LIGHT_COLOR_KEY_PREFIX$appWidgetId"
+
+        private fun contentDarkColorKey(appWidgetId: Int): String =
+            "$CONTENT_DARK_COLOR_KEY_PREFIX$appWidgetId"
 
         private fun layoutForWidget(
             manager: AppWidgetManager,

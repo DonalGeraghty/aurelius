@@ -27,6 +27,13 @@ class PersonalMessageRepository(context: Context) {
                             PersonalMessage(
                                 id = id,
                                 text = text,
+                                source = MessageText.normalizeSource(item.optString(KEY_SOURCE)),
+                                lightTextColor = MessageText.normalizeColor(
+                                    item.optString(KEY_LIGHT_TEXT_COLOR),
+                                ),
+                                darkTextColor = MessageText.normalizeColor(
+                                    item.optString(KEY_DARK_TEXT_COLOR),
+                                ),
                                 createdAt = item.optLong(KEY_CREATED_AT, 0L),
                             ),
                         )
@@ -39,11 +46,19 @@ class PersonalMessageRepository(context: Context) {
     }
 
     @Synchronized
-    fun add(text: String): PersonalMessage? {
+    fun add(
+        text: String,
+        source: String = "",
+        lightTextColor: String = "",
+        darkTextColor: String = "",
+    ): PersonalMessage? {
         val normalizedText = MessageText.normalize(text) ?: return null
         val message = PersonalMessage(
             id = UUID.randomUUID().toString(),
             text = normalizedText,
+            source = MessageText.normalizeSource(source),
+            lightTextColor = MessageText.normalizeColor(lightTextColor),
+            darkTextColor = MessageText.normalizeColor(darkTextColor),
             createdAt = System.currentTimeMillis(),
         )
         save(all() + message)
@@ -51,13 +66,24 @@ class PersonalMessageRepository(context: Context) {
     }
 
     @Synchronized
-    fun update(id: String, text: String): Boolean {
+    fun update(
+        id: String,
+        text: String,
+        source: String = "",
+        lightTextColor: String = "",
+        darkTextColor: String = "",
+    ): Boolean {
         val normalizedText = MessageText.normalize(text) ?: return false
         var changed = false
         val updatedMessages = all().map { message ->
             if (message.id == id) {
                 changed = true
-                message.copy(text = normalizedText)
+                message.copy(
+                    text = normalizedText,
+                    source = MessageText.normalizeSource(source),
+                    lightTextColor = MessageText.normalizeColor(lightTextColor),
+                    darkTextColor = MessageText.normalizeColor(darkTextColor),
+                )
             } else {
                 message
             }
@@ -87,6 +113,9 @@ class PersonalMessageRepository(context: Context) {
                 JSONObject()
                     .put(KEY_ID, message.id)
                     .put(KEY_TEXT, message.text)
+                    .put(KEY_SOURCE, message.source ?: "")
+                    .put(KEY_LIGHT_TEXT_COLOR, message.lightTextColor ?: "")
+                    .put(KEY_DARK_TEXT_COLOR, message.darkTextColor ?: "")
                     .put(KEY_CREATED_AT, message.createdAt),
             )
         }
@@ -98,6 +127,9 @@ class PersonalMessageRepository(context: Context) {
         private const val KEY_MESSAGES = "personal_messages_v1"
         private const val KEY_ID = "id"
         private const val KEY_TEXT = "text"
+        private const val KEY_SOURCE = "source"
+        private const val KEY_LIGHT_TEXT_COLOR = "light_text_color"
+        private const val KEY_DARK_TEXT_COLOR = "dark_text_color"
         private const val KEY_CREATED_AT = "created_at"
     }
 }

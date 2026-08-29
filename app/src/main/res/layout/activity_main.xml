@@ -110,6 +110,36 @@
             android:maxLines="6"
             android:minLines="2" />
 
+        <EditText
+            android:id="@+id/sourceInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:hint="@string/source_hint"
+            android:inputType="textCapWords"
+            android:maxLength="100"
+            android:maxLines="1" />
+
+        <EditText
+            android:id="@+id/lightColorInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:hint="@string/light_text_color_hint"
+            android:inputType="textCapCharacters"
+            android:maxLength="9"
+            android:maxLines="1" />
+
+        <EditText
+            android:id="@+id/darkColorInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:hint="@string/dark_text_color_hint"
+            android:inputType="textCapCharacters"
+            android:maxLength="9"
+            android:maxLines="1" />
+
         <Button
             android:id="@+id/addMessageButton"
             android:layout_width="wrap_content"
