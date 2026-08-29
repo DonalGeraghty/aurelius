@@ -15,6 +15,10 @@
     <string name="mode_personal">Current mode: My messages</string>
     <string name="my_messages_heading">My messages</string>
     <string name="message_hint">Write a quote, reminder, or message</string>
+    <string name="source_hint">Source or author (optional), for example Ovid</string>
+    <string name="light_text_color_hint">Light-mode text color (optional), for example #1B1B1F</string>
+    <string name="dark_text_color_hint">Dark-mode text color (optional), for example #FFFFFF</string>
+    <string name="invalid_text_color">Use a color in #RRGGBB or #AARRGGBB format, or leave it blank</string>
     <string name="add_message">Add message</string>
     <string name="message_added">Message added</string>
     <string name="message_required">Enter a message of up to 500 characters</string>

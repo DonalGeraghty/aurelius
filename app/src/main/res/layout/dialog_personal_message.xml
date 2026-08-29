@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingStart="24dp"
+    android:paddingEnd="24dp">
+
+    <EditText
+        android:id="@+id/dialogMessageInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="top|start"
+        android:hint="@string/message_hint"
+        android:inputType="textCapSentences|textMultiLine"
+        android:maxLength="500"
+        android:maxLines="6"
+        android:minLines="2" />
+
+    <EditText
+        android:id="@+id/dialogSourceInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:hint="@string/source_hint"
+        android:inputType="textCapWords"
+        android:maxLength="100"
+        android:maxLines="1" />
+
+    <EditText
+        android:id="@+id/dialogLightColorInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:hint="@string/light_text_color_hint"
+        android:inputType="textCapCharacters"
+        android:maxLength="9"
+        android:maxLines="1" />
+
+    <EditText
+        android:id="@+id/dialogDarkColorInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:hint="@string/dark_text_color_hint"
+        android:inputType="textCapCharacters"
+        android:maxLength="9"
+        android:maxLines="1" />
+
+</LinearLayout>

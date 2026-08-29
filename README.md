@@ -9,7 +9,7 @@ This README is also intended to act as a **study guide and deployment record** f
 ## What it does
 
 - Native Android app written in Kotlin.
-- Home-screen widget with either a Stoic quote + attribution or a personal message.
+- Home-screen widget with either a Stoic quote + attribution or a personal card.
 - Two global content modes: **Stoic quotes** and **My messages**.
 - Add, edit, and delete personal messages in the companion app.
 - Personal messages are stored locally on the device.
@@ -28,7 +28,7 @@ This README is also intended to act as a **study guide and deployment record** f
 
 **Stoic quotes** is the default mode and preserves the original behaviour for existing installations. Quotes are selected from the bundled offline collection and may include attribution.
 
-**My messages** selects from messages created in the companion app. Messages can be added, edited, and deleted, are limited to 500 characters, and stay on the device in versioned `SharedPreferences` storage. The mode cannot be enabled until at least one message exists. Deleting the final message automatically returns Aurelius to Stoic mode so the widget is never left blank.
+**My messages** selects from personal cards created in the companion app. Cards can be added, edited, and deleted, are limited to 500 characters, and may include an optional source plus separate light- and dark-mode text colors. Personal card text is title-cased on display, while the original input is retained for editing. Cards stay on the device in versioned `SharedPreferences` storage. The mode cannot be enabled until at least one card exists. Deleting the final card automatically returns Aurelius to Stoic mode so the widget is never left blank.
 
 The selected mode applies to all installed Aurelius widgets. Switching modes or changing the personal-message collection refreshes the widgets immediately. Personal messages are excluded from Android backup; uninstalling Aurelius or clearing its app data removes them.
 

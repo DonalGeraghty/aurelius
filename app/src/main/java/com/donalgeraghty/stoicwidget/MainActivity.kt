@@ -24,6 +24,9 @@ class MainActivity : Activity() {
     private lateinit var personalModeSwitch: Switch
     private lateinit var modeStatus: TextView
     private lateinit var messageInput: EditText
+    private lateinit var sourceInput: EditText
+    private lateinit var lightColorInput: EditText
+    private lateinit var darkColorInput: EditText
     private lateinit var personalMessageCount: TextView
     private lateinit var messagesContainer: LinearLayout
     private lateinit var attributionSwitch: Switch
@@ -43,6 +46,9 @@ class MainActivity : Activity() {
         personalModeSwitch = findViewById(R.id.personalModeSwitch)
         modeStatus = findViewById(R.id.modeStatus)
         messageInput = findViewById(R.id.messageInput)
+        sourceInput = findViewById(R.id.sourceInput)
+        lightColorInput = findViewById(R.id.lightColorInput)
+        darkColorInput = findViewById(R.id.darkColorInput)
         personalMessageCount = findViewById(R.id.personalMessageCount)
         messagesContainer = findViewById(R.id.messagesContainer)
         attributionSwitch = findViewById(R.id.showAttributionSwitch)
@@ -96,14 +102,24 @@ class MainActivity : Activity() {
 
     private fun configureMessageControls() {
         messageInput.filters = arrayOf(InputFilter.LengthFilter(MessageText.MAX_LENGTH))
+        sourceInput.filters = arrayOf(InputFilter.LengthFilter(MessageText.SOURCE_MAX_LENGTH))
         findViewById<Button>(R.id.addMessageButton).setOnClickListener {
-            val message = messageRepository.add(messageInput.text.toString())
+            if (!colorsAreValid(lightColorInput, darkColorInput)) return@setOnClickListener
+            val message = messageRepository.add(
+                text = messageInput.text.toString(),
+                source = sourceInput.text.toString(),
+                lightTextColor = lightColorInput.text.toString(),
+                darkTextColor = darkColorInput.text.toString(),
+            )
             if (message == null) {
                 Toast.makeText(this, R.string.message_required, Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
             messageInput.text.clear()
+            sourceInput.text.clear()
+            lightColorInput.text.clear()
+            darkColorInput.text.clear()
             renderMessages()
             if (preferences.contentMode == ContentMode.PERSONAL) refreshContent()
             Toast.makeText(this, R.string.message_added, Toast.LENGTH_SHORT).show()
@@ -173,10 +189,10 @@ class MainActivity : Activity() {
     }
 
     private fun renderPreview() {
-        val appearance = WidgetAppearance.resolve(this)
+        val appearance = WidgetAppearance.resolve(this, previewContent)
         val isPersonalMode = preferences.contentMode == ContentMode.PERSONAL
-        quoteText.text = "“${previewContent.text}”"
-        quoteAuthor.text = previewContent.attribution.orEmpty()
+        quoteText.text = WidgetContentFormatter.quote(previewContent)
+        quoteAuthor.text = WidgetContentFormatter.attribution(previewContent).orEmpty()
         contentCount.text = if (isPersonalMode) {
             resources.getQuantityString(
                 R.plurals.personal_message_count,
@@ -195,13 +211,14 @@ class MainActivity : Activity() {
         quoteText.textSize = 20f * appearance.fontScale
         quoteAuthor.textSize = 14f * appearance.fontScale
         quoteAuthor.visibility = if (
-            previewContent.attribution != null && appearance.showAttribution
+            WidgetContentFormatter.attribution(previewContent) != null &&
+                appearance.showAttribution
         ) {
             View.VISIBLE
         } else {
             View.GONE
         }
-        attributionSwitch.isEnabled = !isPersonalMode
+        attributionSwitch.isEnabled = true
     }
 
     private fun renderMessages() {
@@ -225,7 +242,12 @@ class MainActivity : Activity() {
         messages.asReversed().forEach { message ->
             val row = LayoutInflater.from(this)
                 .inflate(R.layout.item_personal_message, messagesContainer, false)
-            row.findViewById<TextView>(R.id.messageText).text = message.text
+            row.findViewById<TextView>(R.id.messageText).text =
+                MessageText.titleCaseForDisplay(message.text)
+            row.findViewById<TextView>(R.id.messageSource).apply {
+                text = MessageText.attributionForDisplay(message.source).orEmpty()
+                visibility = if (message.source == null) View.GONE else View.VISIBLE
+            }
             row.findViewById<Button>(R.id.editMessageButton).setOnClickListener {
                 showEditDialog(message)
             }
@@ -237,21 +259,21 @@ class MainActivity : Activity() {
     }
 
     private fun showEditDialog(message: PersonalMessage) {
-        val input = EditText(this).apply {
+        val container = LayoutInflater.from(this).inflate(R.layout.dialog_personal_message, null)
+        val input = container.findViewById<EditText>(R.id.dialogMessageInput).apply {
             setText(message.text)
             setSelection(text.length)
             filters = arrayOf(InputFilter.LengthFilter(MessageText.MAX_LENGTH))
         }
-        val horizontalPadding = (24 * resources.displayMetrics.density).toInt()
-        val container = LinearLayout(this).apply {
-            setPadding(horizontalPadding, 0, horizontalPadding, 0)
-            addView(
-                input,
-                LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT,
-                ),
-            )
+        val source = container.findViewById<EditText>(R.id.dialogSourceInput).apply {
+            setText(message.source.orEmpty())
+            filters = arrayOf(InputFilter.LengthFilter(MessageText.SOURCE_MAX_LENGTH))
+        }
+        val lightColor = container.findViewById<EditText>(R.id.dialogLightColorInput).apply {
+            setText(message.lightTextColor.orEmpty())
+        }
+        val darkColor = container.findViewById<EditText>(R.id.dialogDarkColorInput).apply {
+            setText(message.darkTextColor.orEmpty())
         }
 
         val dialog = AlertDialog.Builder(this)
@@ -262,7 +284,15 @@ class MainActivity : Activity() {
             .create()
         dialog.setOnShowListener {
             dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-                if (messageRepository.update(message.id, input.text.toString())) {
+                if (!colorsAreValid(lightColor, darkColor)) return@setOnClickListener
+                if (messageRepository.update(
+                        id = message.id,
+                        text = input.text.toString(),
+                        source = source.text.toString(),
+                        lightTextColor = lightColor.text.toString(),
+                        darkTextColor = darkColor.text.toString(),
+                    )
+                ) {
                     dialog.dismiss()
                     renderMessages()
                     if (preferences.contentMode == ContentMode.PERSONAL) refreshContent()
@@ -272,6 +302,17 @@ class MainActivity : Activity() {
             }
         }
         dialog.show()
+    }
+
+    private fun colorsAreValid(lightColor: EditText, darkColor: EditText): Boolean {
+        if (
+            MessageText.isValidOptionalColor(lightColor.text.toString()) &&
+            MessageText.isValidOptionalColor(darkColor.text.toString())
+        ) {
+            return true
+        }
+        Toast.makeText(this, R.string.invalid_text_color, Toast.LENGTH_LONG).show()
+        return false
     }
 
     private fun confirmDelete(message: PersonalMessage) {
