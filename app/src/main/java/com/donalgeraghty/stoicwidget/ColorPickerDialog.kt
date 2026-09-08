@@ -1,13 +1,12 @@
 package com.donalgeraghty.stoicwidget
 
-import android.app.AlertDialog
 import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.SeekBar
-import kotlin.math.roundToInt
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 object ColorPickerDialog {
     fun show(
@@ -18,35 +17,29 @@ object ColorPickerDialog {
     ) {
         val content = LayoutInflater.from(context).inflate(R.layout.dialog_color_picker, null)
         val preview = content.findViewById<View>(R.id.colorPreview)
-        val hue = content.findViewById<SeekBar>(R.id.hueSeekBar)
-        val saturation = content.findViewById<SeekBar>(R.id.saturationSeekBar)
-        val brightness = content.findViewById<SeekBar>(R.id.brightnessSeekBar)
-        val hsv = FloatArray(3)
-        Color.colorToHSV(initialColor, hsv)
+        val red = content.findViewById<SeekBar>(R.id.redSeekBar)
+        val green = content.findViewById<SeekBar>(R.id.greenSeekBar)
+        val blue = content.findViewById<SeekBar>(R.id.blueSeekBar)
 
-        hue.max = HUE_MAX
-        saturation.max = PERCENT_MAX
-        brightness.max = PERCENT_MAX
-        hue.progress = hsv[0].roundToInt()
-        saturation.progress = (hsv[1] * PERCENT_MAX).roundToInt()
-        brightness.progress = (hsv[2] * PERCENT_MAX).roundToInt()
+        red.max = COLOR_COMPONENT_MAX
+        green.max = COLOR_COMPONENT_MAX
+        blue.max = COLOR_COMPONENT_MAX
+        red.progress = Color.red(initialColor)
+        green.progress = Color.green(initialColor)
+        blue.progress = Color.blue(initialColor)
 
-        fun selectedColor(): Int = Color.HSVToColor(
-            floatArrayOf(
-                hue.progress.toFloat(),
-                saturation.progress / PERCENT_MAX.toFloat(),
-                brightness.progress / PERCENT_MAX.toFloat(),
-            ),
-        )
+        fun selectedColor(): Int = Color.rgb(red.progress, green.progress, blue.progress)
+
+        val density = context.resources.displayMetrics.density
+        val previewBackground = GradientDrawable().apply {
+            shape = GradientDrawable.RECTANGLE
+            cornerRadius = 12f * density
+            setStroke((1f * density).toInt(), context.getColor(R.color.parchment_outline))
+        }
+        preview.background = previewBackground
 
         fun updatePreview() {
-            val density = context.resources.displayMetrics.density
-            preview.background = GradientDrawable().apply {
-                shape = GradientDrawable.RECTANGLE
-                cornerRadius = 8f * density
-                setColor(selectedColor())
-                setStroke((1f * density).toInt(), Color.GRAY)
-            }
+            previewBackground.setColor(selectedColor())
         }
 
         val listener = object : SeekBar.OnSeekBarChangeListener {
@@ -58,12 +51,12 @@ object ColorPickerDialog {
 
             override fun onStopTrackingTouch(seekBar: SeekBar?) = Unit
         }
-        hue.setOnSeekBarChangeListener(listener)
-        saturation.setOnSeekBarChangeListener(listener)
-        brightness.setOnSeekBarChangeListener(listener)
+        red.setOnSeekBarChangeListener(listener)
+        green.setOnSeekBarChangeListener(listener)
+        blue.setOnSeekBarChangeListener(listener)
         updatePreview()
 
-        AlertDialog.Builder(context)
+        MaterialAlertDialogBuilder(context)
             .setTitle(title)
             .setView(content)
             .setNegativeButton(android.R.string.cancel, null)
@@ -71,6 +64,5 @@ object ColorPickerDialog {
             .show()
     }
 
-    private const val HUE_MAX = 360
-    private const val PERCENT_MAX = 100
+    private const val COLOR_COMPONENT_MAX = 255
 }

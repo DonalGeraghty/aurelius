@@ -17,12 +17,13 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:labelFor="@id/hueSeekBar"
-        android:text="@string/hue"
+        android:labelFor="@id/redSeekBar"
+        android:text="@string/red"
+        android:textColor="?attr/colorOnSurface"
         android:textStyle="bold" />
 
     <SeekBar
-        android:id="@+id/hueSeekBar"
+        android:id="@+id/redSeekBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
@@ -30,12 +31,13 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:labelFor="@id/saturationSeekBar"
-        android:text="@string/saturation"
+        android:labelFor="@id/greenSeekBar"
+        android:text="@string/green"
+        android:textColor="?attr/colorOnSurface"
         android:textStyle="bold" />
 
     <SeekBar
-        android:id="@+id/saturationSeekBar"
+        android:id="@+id/greenSeekBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
@@ -43,12 +45,13 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:labelFor="@id/brightnessSeekBar"
-        android:text="@string/brightness"
+        android:labelFor="@id/blueSeekBar"
+        android:text="@string/blue"
+        android:textColor="?attr/colorOnSurface"
         android:textStyle="bold" />
 
     <SeekBar
-        android:id="@+id/brightnessSeekBar"
+        android:id="@+id/blueSeekBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 

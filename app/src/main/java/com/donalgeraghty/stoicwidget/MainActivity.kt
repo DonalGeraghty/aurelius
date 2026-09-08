@@ -2,31 +2,33 @@ package com.donalgeraghty.stoicwidget
 
 import android.app.Activity
 import android.content.Intent
-import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
-import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.Spinner
-import android.widget.Switch
 import android.widget.TextView
 import android.widget.Toast
+import com.google.android.material.button.MaterialButton
+import com.google.android.material.materialswitch.MaterialSwitch
 
 class MainActivity : Activity() {
     private lateinit var quoteText: TextView
     private lateinit var quoteAuthor: TextView
     private lateinit var contentCount: TextView
     private lateinit var previewCard: LinearLayout
-    private lateinit var personalModeSwitch: Switch
+    private lateinit var personalModeSwitch: MaterialSwitch
     private lateinit var modeStatus: TextView
     private lateinit var personalMessageCount: TextView
     private lateinit var collectionSpinner: Spinner
     private lateinit var lightColorSwatch: View
     private lateinit var darkColorSwatch: View
-    private lateinit var attributionSwitch: Switch
+    private lateinit var lightColorControl: View
+    private lateinit var darkColorControl: View
+    private lateinit var resetTextColorsButton: MaterialButton
+    private lateinit var attributionSwitch: MaterialSwitch
     private lateinit var preferences: WidgetPreferences
     private lateinit var messageRepository: PersonalMessageRepository
     private lateinit var previewContent: WidgetContent
@@ -53,7 +55,7 @@ class MainActivity : Activity() {
         configureModeControls()
         configureCardControls()
         configureAppearanceControls()
-        findViewById<Button>(R.id.refreshButton).setOnClickListener {
+        findViewById<MaterialButton>(R.id.refreshButton).setOnClickListener {
             StoicWidgetProvider.updateAllWidgets(this)
             previewContent = WidgetContentSelector.random(this)
             renderPreview()
@@ -109,7 +111,7 @@ class MainActivity : Activity() {
     }
 
     private fun configureCardControls() {
-        findViewById<Button>(R.id.manageCardsButton).setOnClickListener {
+        findViewById<MaterialButton>(R.id.manageCardsButton).setOnClickListener {
             startActivity(Intent(this, CustomCardsActivity::class.java))
         }
         configureCollectionSpinner()
@@ -145,27 +147,31 @@ class MainActivity : Activity() {
     private fun configureAppearanceControls() {
         val themeSpinner = findViewById<Spinner>(R.id.themeSpinner)
         val fontSizeSpinner = findViewById<Spinner>(R.id.fontSizeSpinner)
-        val transparentSwitch = findViewById<Switch>(R.id.transparentBackgroundSwitch)
-        findViewById<View>(R.id.lightColorControl).setOnClickListener {
+        val transparentSwitch = findViewById<MaterialSwitch>(R.id.transparentBackgroundSwitch)
+        lightColorControl = findViewById(R.id.lightColorControl)
+        darkColorControl = findViewById(R.id.darkColorControl)
+        resetTextColorsButton = findViewById(R.id.resetTextColorsButton)
+        lightColorControl.setOnClickListener {
             ColorPickerDialog.show(this, getString(R.string.choose_light_text_color), currentLightTextColor()) { color ->
                 preferences.lightTextColor = color
                 updateColorSwatches()
                 appearanceChanged()
             }
         }
-        findViewById<View>(R.id.darkColorControl).setOnClickListener {
+        darkColorControl.setOnClickListener {
             ColorPickerDialog.show(this, getString(R.string.choose_dark_text_color), currentDarkTextColor()) { color ->
                 preferences.darkTextColor = color
                 updateColorSwatches()
                 appearanceChanged()
             }
         }
-        findViewById<Button>(R.id.resetTextColorsButton).setOnClickListener {
+        resetTextColorsButton.setOnClickListener {
             preferences.resetTextColors()
             updateColorSwatches()
             appearanceChanged()
         }
         updateColorSwatches()
+        updateColorControlsEnabled()
         themeSpinner.adapter = ArrayAdapter.createFromResource(
             this,
             R.array.widget_theme_options,
@@ -174,6 +180,7 @@ class MainActivity : Activity() {
         themeSpinner.setSelection(preferences.theme.ordinal)
         themeSpinner.onItemSelectedListener = enumSpinnerListener { position ->
             preferences.theme = WidgetPreferences.Theme.values()[position]
+            updateColorControlsEnabled()
             appearanceChanged()
         }
         fontSizeSpinner.adapter = ArrayAdapter.createFromResource(
@@ -235,6 +242,15 @@ class MainActivity : Activity() {
         setSwatchColor(darkColorSwatch, currentDarkTextColor())
     }
 
+    private fun updateColorControlsEnabled() {
+        val enabled = preferences.theme != WidgetPreferences.Theme.WALLPAPER
+        val alpha = if (enabled) 1f else 0.4f
+        listOf(lightColorControl, darkColorControl, resetTextColorsButton).forEach {
+            it.isEnabled = enabled
+            it.alpha = alpha
+        }
+    }
+
     private fun currentLightTextColor(): Int = preferences.lightTextColor ?: getColor(R.color.widget_text_light)
     private fun currentDarkTextColor(): Int = preferences.darkTextColor ?: getColor(R.color.widget_text_dark)
 
@@ -243,7 +259,7 @@ class MainActivity : Activity() {
         view.background = GradientDrawable().apply {
             cornerRadius = 6f * density
             setColor(color)
-            setStroke(density.toInt(), Color.GRAY)
+            setStroke(density.toInt(), getColor(R.color.parchment_outline))
         }
     }
 

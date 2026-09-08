@@ -10,6 +10,7 @@
     <string name="quote_count">%1$d offline Stoic quotes included</string>
     <string name="add_widget_help">To add it: long-press an empty area of your Android home screen → Widgets → StoicWidget → drag the widget onto your home screen.</string>
     <string name="content_mode_heading">Content mode</string>
+    <string name="preview_heading">Preview</string>
     <string name="use_my_messages">Use my messages</string>
     <string name="mode_stoic">Current mode: Stoic quotes</string>
     <string name="mode_personal">Current mode: My messages</string>
@@ -62,11 +63,11 @@
     <string name="choose_light_text_color">Choose light-mode text color</string>
     <string name="choose_dark_text_color">Choose dark-mode text color</string>
     <string name="reset_text_colors">Reset text colors</string>
-    <string name="global_text_colors_help">These colors apply to every card. Follow system selects the light or dark color automatically.</string>
+    <string name="global_text_colors_help">These colors apply to every card. Follow system selects the light or dark color automatically. Not available with Wallpaper colors, which always uses wallpaper-derived text colors.</string>
     <string name="color_preview">Selected color preview</string>
-    <string name="hue">Hue</string>
-    <string name="saturation">Saturation</string>
-    <string name="brightness">Brightness</string>
+    <string name="red">Red</string>
+    <string name="green">Green</string>
+    <string name="blue">Blue</string>
     <string name="apply">Apply</string>
     <string name="font_size_label">Font size</string>
     <string name="transparent_background">Transparent background</string>

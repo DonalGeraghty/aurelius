@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="parchment_background">#1E1B16</color>
+    <color name="parchment_surface">#2C2820</color>
+    <color name="parchment_on_surface">#EFE7D8</color>
+    <color name="parchment_on_surface_variant">#B8AE9C</color>
+    <color name="parchment_primary">#D4AF6A</color>
+    <color name="parchment_on_primary">#2B2620</color>
+    <color name="parchment_secondary">#C98A5E</color>
+    <color name="parchment_outline">#4A4438</color>
+</resources>
