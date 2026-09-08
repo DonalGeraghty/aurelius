@@ -11,7 +11,7 @@ This README is also intended to act as a **study guide and deployment record** f
 - Native Android app written in Kotlin.
 - Home-screen widget with either a Stoic quote + attribution or a personal card.
 - Two global content modes: **Stoic quotes** and **My messages**.
-- Add, edit, and delete personal messages in the companion app.
+- Add, edit, duplicate, disable, delete, and reorder personal cards, organized into searchable collections, in the companion app.
 - Personal messages are stored locally on the device.
 - 72 bundled Stoic quotations/adaptations.
 - Pseudo-random content from the selected mode on each widget update or manual refresh.
@@ -23,12 +23,13 @@ This README is also intended to act as a **study guide and deployment record** f
 - Tapping the widget opens the small companion app.
 - Tapping the displayed quote or attribution immediately chooses another pseudo-random quote.
 - Companion app previews the selected content, manages searchable custom-card collections, switches modes, and lets you manually refresh installed widgets.
+- Companion app uses a Material 3 "warm marble & parchment" design, with light/dark palettes.
 
 ## Content modes
 
 **Stoic quotes** is the default mode and preserves the original behaviour for existing installations. Quotes are selected from the bundled offline collection and may include attribution.
 
-**My messages** selects from personal cards created in the companion app. The dedicated Custom Cards screen supports search, collections, duplication, temporary disabling, deletion, and long-press drag ordering. Cards are limited to 500 characters and may include an optional source. Personal card text is title-cased on display, while the original input is retained for editing. The widget can rotate through every enabled card or one selected collection. Global light- and dark-mode text colors are selected with the color picker under Widget appearance and apply to every card. Cards stay on the device in versioned `SharedPreferences` storage. The mode cannot be enabled until at least one enabled card exists. Disabling or deleting the final enabled card automatically returns Aurelius to Stoic mode so the widget is never left blank.
+**My messages** selects from personal cards created in the companion app. The dedicated Custom Cards screen supports search, collections, duplication, temporary disabling, deletion, and long-press drag ordering. Cards are limited to 500 characters and may include an optional source. Personal card text is title-cased on display, while the original input is retained for editing. The widget can rotate through every enabled card or one selected collection. Global light- and dark-mode text colors are selected with an RGB slider color picker under Widget appearance and apply to every card; the picker is unavailable when the Wallpaper colors theme is active, since that theme always uses wallpaper-derived text colors. Cards stay on the device in versioned `SharedPreferences` storage. The mode cannot be enabled until at least one enabled card exists. Disabling or deleting the final enabled card automatically returns Aurelius to Stoic mode so the widget is never left blank.
 
 The selected mode applies to all installed Aurelius widgets. Switching modes or changing the personal-message collection refreshes the widgets immediately. Personal messages are excluded from Android backup; uninstalling Aurelius or clearing its app data removes them.
 
@@ -57,6 +58,7 @@ The application ID is the Android package name used by Google Play. It should be
 - Android SDK 37
 - A Google Play Developer personal account
 - A private Android upload keystore
+- Network access for Gradle to fetch dependencies (including the Material Components library) on first sync/build; the built app itself requests no internet permission
 
 ## GitHub Actions
 
@@ -479,7 +481,9 @@ Android Studio/ADB installation is a development option only. A managed device m
 ```text
 app/src/main/
 ├── java/com/donalgeraghty/stoicwidget/
+│   ├── ColorPickerDialog.kt
 │   ├── ContentMode.kt
+│   ├── CustomCardsActivity.kt
 │   ├── MainActivity.kt
 │   ├── MessageText.kt
 │   ├── PersonalMessage.kt

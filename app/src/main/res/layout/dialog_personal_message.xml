@@ -1,40 +1,60 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:paddingStart="24dp"
     android:paddingEnd="24dp">
 
-    <EditText
-        android:id="@+id/dialogMessageInput"
+    <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="top|start"
-        android:hint="@string/message_hint"
-        android:inputType="textCapSentences|textMultiLine"
-        android:maxLength="500"
-        android:maxLines="6"
-        android:minLines="2" />
+        style="@style/RoundedTextInputLayout"
+        android:hint="@string/message_hint">
 
-    <EditText
-        android:id="@+id/dialogSourceInput"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:hint="@string/source_hint"
-        android:inputType="textCapWords"
-        android:maxLength="100"
-        android:maxLines="1" />
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/dialogMessageInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="top|start"
+            android:inputType="textCapSentences|textMultiLine"
+            android:maxLength="500"
+            android:maxLines="6"
+            android:minLines="2" />
+    </com.google.android.material.textfield.TextInputLayout>
 
-    <EditText
-        android:id="@+id/dialogCollectionInput"
+    <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        style="@style/RoundedTextInputLayout"
         android:layout_marginTop="8dp"
-        android:hint="@string/collection_hint"
-        android:inputType="textCapWords"
-        android:maxLength="40"
-        android:maxLines="1" />
+        android:hint="@string/source_hint">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/dialogSourceInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textCapWords"
+            android:maxLength="100"
+            android:maxLines="1" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        style="@style/RoundedTextInputLayout"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        android:hint="@string/collection_hint">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/dialogCollectionInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textCapWords"
+            android:maxLength="40"
+            android:maxLines="1" />
+    </com.google.android.material.textfield.TextInputLayout>
 
 </LinearLayout>

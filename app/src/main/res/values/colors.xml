@@ -7,4 +7,13 @@
     <color name="widget_dynamic_background">#FF25232A</color>
     <color name="widget_dynamic_text">#FFFFFFFF</color>
     <color name="widget_dynamic_secondary">#CCFFFFFF</color>
+
+    <color name="parchment_background">#FBF6EC</color>
+    <color name="parchment_surface">#FFFDF8</color>
+    <color name="parchment_on_surface">#2B2620</color>
+    <color name="parchment_on_surface_variant">#6B6154</color>
+    <color name="parchment_primary">#A6833C</color>
+    <color name="parchment_on_primary">#FFFFFF</color>
+    <color name="parchment_secondary">#B0714B</color>
+    <color name="parchment_outline">#DDD3C0</color>
 </resources>

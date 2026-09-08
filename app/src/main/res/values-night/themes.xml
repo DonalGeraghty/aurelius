@@ -1,9 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.StoicWidget" parent="android:style/Theme.Material.NoActionBar">
+    <style name="Theme.StoicWidget" parent="Theme.Material3.Dark.NoActionBar">
         <item name="android:fontFamily">sans</item>
-        <item name="android:navigationBarColor">#111315</item>
-        <item name="android:statusBarColor">#111315</item>
-        <item name="android:colorAccent">#D7DADF</item>
+        <item name="android:navigationBarColor">@color/parchment_background</item>
+        <item name="android:statusBarColor">@color/parchment_background</item>
+        <item name="android:colorBackground">@color/parchment_background</item>
+        <item name="android:colorAccent">@color/parchment_primary</item>
+        <item name="colorPrimary">@color/parchment_primary</item>
+        <item name="colorOnPrimary">@color/parchment_on_primary</item>
+        <item name="colorSecondary">@color/parchment_secondary</item>
+        <item name="colorOnSecondary">@color/parchment_on_primary</item>
+        <item name="colorSurface">@color/parchment_surface</item>
+        <item name="colorOnSurface">@color/parchment_on_surface</item>
+        <item name="colorOnSurfaceVariant">@color/parchment_on_surface_variant</item>
+        <item name="colorOutline">@color/parchment_outline</item>
     </style>
 </resources>

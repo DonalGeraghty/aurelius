@@ -1,8 +1,8 @@
 package com.donalgeraghty.stoicwidget
 
 import android.app.Activity
-import android.app.AlertDialog
 import android.content.ClipData
+import android.content.DialogInterface
 import android.os.Bundle
 import android.text.Editable
 import android.text.InputFilter
@@ -12,13 +12,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
-import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.Spinner
-import android.widget.Switch
 import android.widget.TextView
 import android.widget.Toast
+import com.google.android.material.button.MaterialButton
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.materialswitch.MaterialSwitch
 
 class CustomCardsActivity : Activity() {
     private lateinit var repository: PersonalMessageRepository
@@ -38,8 +39,8 @@ class CustomCardsActivity : Activity() {
         resultCount = findViewById(R.id.cardResultCount)
         collectionFilter = findViewById(R.id.cardCollectionFilter)
 
-        findViewById<Button>(R.id.backButton).setOnClickListener { finish() }
-        findViewById<Button>(R.id.addCardButton).setOnClickListener { showCardDialog(null) }
+        findViewById<MaterialButton>(R.id.backButton).setOnClickListener { finish() }
+        findViewById<MaterialButton>(R.id.addCardButton).setOnClickListener { showCardDialog(null) }
         findViewById<EditText>(R.id.cardSearchInput).addTextChangedListener(
             object : TextWatcher {
                 override fun beforeTextChanged(value: CharSequence?, start: Int, count: Int, after: Int) = Unit
@@ -110,18 +111,18 @@ class CustomCardsActivity : Activity() {
             visibility = if (card.source == null) View.GONE else View.VISIBLE
         }
         row.findViewById<TextView>(R.id.messageCollection).text = card.collection
-        row.findViewById<Switch>(R.id.messageEnabledSwitch).apply {
+        row.findViewById<MaterialSwitch>(R.id.messageEnabledSwitch).apply {
             isChecked = card.enabled
             setOnCheckedChangeListener { _, checked ->
                 if (repository.setEnabled(card.id, checked)) contentChanged()
             }
         }
-        row.findViewById<Button>(R.id.editMessageButton).setOnClickListener { showCardDialog(card) }
-        row.findViewById<Button>(R.id.duplicateMessageButton).setOnClickListener {
+        row.findViewById<MaterialButton>(R.id.editMessageButton).setOnClickListener { showCardDialog(card) }
+        row.findViewById<MaterialButton>(R.id.duplicateMessageButton).setOnClickListener {
             repository.duplicate(card.id)
             contentChanged()
         }
-        row.findViewById<Button>(R.id.deleteMessageButton).setOnClickListener { confirmDelete(card) }
+        row.findViewById<MaterialButton>(R.id.deleteMessageButton).setOnClickListener { confirmDelete(card) }
         row.setOnLongClickListener {
             it.startDragAndDrop(
                 ClipData.newPlainText(DRAG_LABEL, card.id),
@@ -159,14 +160,14 @@ class CustomCardsActivity : Activity() {
             setText(card?.collection ?: filteredCollection ?: MessageText.DEFAULT_COLLECTION)
             filters = arrayOf(InputFilter.LengthFilter(MessageText.COLLECTION_MAX_LENGTH))
         }
-        val dialog = AlertDialog.Builder(this)
+        val dialog = MaterialAlertDialogBuilder(this)
             .setTitle(if (card == null) R.string.add_card else R.string.edit_card)
             .setView(content)
             .setNegativeButton(android.R.string.cancel, null)
             .setPositiveButton(R.string.save, null)
             .create()
         dialog.setOnShowListener {
-            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+            dialog.getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener {
                 val success = if (card == null) {
                     repository.add(
                         text.text.toString(),
@@ -193,7 +194,7 @@ class CustomCardsActivity : Activity() {
     }
 
     private fun confirmDelete(card: PersonalMessage) {
-        AlertDialog.Builder(this)
+        MaterialAlertDialogBuilder(this)
             .setTitle(R.string.delete_message)
             .setMessage(R.string.delete_message_confirmation)
             .setNegativeButton(android.R.string.cancel, null)
